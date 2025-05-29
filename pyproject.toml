@@ -16,7 +16,9 @@ dependencies = [
     "pylint (>=3.3.7,<4.0.0)",
     "python-dotenv (>=1.1.0,<2.0.0)",
     "drf-spectacular (>=0.28.0,<0.29.0)",
-    "psycopg2 (>=2.9.10,<3.0.0)"
+    "psycopg2 (>=2.9.10,<3.0.0)",
+    "pytest (>=8.3.5,<9.0.0)",
+    "pytest-django (>=4.11.1,<5.0.0)"
 ]
 
 [tool.poetry]
