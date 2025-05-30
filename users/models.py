@@ -55,12 +55,14 @@ class UserSkill(models.Model):
         null=True,
     )
     level = models.IntegerField(
+        default=1,
         validators=[
             MinValueValidator(1),
             MaxValueValidator(10),
         ],
     )
     xp = models.IntegerField(
+        default=0,
         validators=[
             MinValueValidator(0),
         ],

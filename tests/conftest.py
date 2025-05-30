@@ -36,7 +36,7 @@ def f_skill():
 def f_task(f_user, f_project):
     skill = Task.objects.create(
         title='Fake',
-        assigned_to=f_user.id,
-        project=f_project.id,
+        assigned_to=f_user,
+        project=f_project,
     )
     return skill
