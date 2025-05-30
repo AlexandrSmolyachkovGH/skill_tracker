@@ -9,8 +9,8 @@ jobs:
       POSTGRES_DB: default_db
       POSTGRES_USER: default_user
       POSTGRES_PASSWORD: default_password
-      POSTGRES_HOST: skills_core_pg
-      POSTGRES_PORT: '5432'
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: '5438'
 
     steps:
       - name: Checkout repository code
