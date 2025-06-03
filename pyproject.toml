@@ -3,15 +3,76 @@ name = "skill-tracker-app"
 version = "0.1.0"
 description = ""
 authors = [
-    {name = "AlexandrSmolyachkovGH",email = "alexandr.smolyachkov@gmail.com"}
+    { name = "AlexandrSmolyachkovGH", email = "alexandr.smolyachkov@gmail.com" }
 ]
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "djangorestframework (>=3.16.0,<4.0.0)"
+    "djangorestframework (>=3.16.0,<4.0.0)",
+    "flake8 (>=7.2.0,<8.0.0)",
+    "mypy (>=1.15.0,<2.0.0)",
+    "isort (>=6.0.1,<7.0.0)",
+    "black (>=25.1.0,<26.0.0)",
+    "pylint (>=3.3.7,<4.0.0)",
+    "python-dotenv (>=1.1.0,<2.0.0)",
+    "drf-spectacular (>=0.28.0,<0.29.0)",
+    "psycopg2 (>=2.9.10,<3.0.0)",
+    "pytest (>=8.3.5,<9.0.0)",
+    "pytest-django (>=4.11.1,<5.0.0)"
 ]
 
+[tool.poetry]
+package-mode = false
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^4.2.0"
+
+[tool.black]
+line-length = 79
+target-version = ['py310']
+skip-string-normalization = true
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | migrations
+  | settings\.py
+  | venv
+  | env
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 79
+skip = [
+    "settings.py",
+    ".venv",
+    "env",
+    "build",
+    "dist",
+    "migrations",
+    "__pycache__",
+    ".git",
+    ".env",
+    ".idea"
+]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+warn_unused_ignores = true
+exclude = '(.*/migrations/.*$|.*/settings.*$)'
