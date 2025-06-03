@@ -9,7 +9,7 @@ from users.models import User
 @pytest.fixture
 def f_user():
     user = User.objects.create(
-        name='Fake',
+        username='Fake',
         email='fake@fake.fake',
     )
     return user

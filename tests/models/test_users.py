@@ -11,10 +11,10 @@ from users.models import (
 @pytest.mark.django_db
 def test_create_user_model() -> None:
     user_model = User.objects.create(
-        name='TestName',
+        username='TestName',
         email='test@test.test',
     )
-    assert user_model.name == 'TestName'
+    assert user_model.username == 'TestName'
     assert user_model.email == 'test@test.test'
     assert User.objects.filter(
         id=user_model.id
@@ -27,7 +27,7 @@ def test_create_user_model() -> None:
 
 def test_user_str_repr() -> None:
     user_model = User(
-        name='TestName',
+        username='TestName',
         email='test@test.test',
     )
     assert str(user_model) == "User: TestName, email: test@test.test"

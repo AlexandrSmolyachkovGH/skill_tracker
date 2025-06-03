@@ -42,12 +42,12 @@ def test_task_str_repr(f_user, f_project) -> None:
 def test_task_attachment_model(f_task) -> None:
     ta_model = TaskAttachment.objects.create(
         task=f_task,
-        file_url='https://test-task.test/'
+        file_id='c1d2e3f4-5a6b-7c8d-9e0f-1a2b3c4d5e6f'
     )
     assert TaskAttachment.objects.filter(
         task=f_task,
     ).exists()
-    assert ta_model.file_url == 'https://test-task.test/'
+    assert ta_model.file_id == 'c1d2e3f4-5a6b-7c8d-9e0f-1a2b3c4d5e6f'
     ta_model.delete()
     assert not TaskAttachment.objects.filter(
         task=f_task,
@@ -58,6 +58,6 @@ def test_task_attachment_model(f_task) -> None:
 def test_task_attachment_str_repr(f_task) -> None:
     tam = TaskAttachment(
         task=f_task,
-        file_url='https://test-task.test/'
+        file_id='c1d2e3f4-5a6b-7c8d-9e0f-1a2b3c4d5e6f'
     )
-    assert str(tam) == f"TaskID: {tam.task}, url: {tam.file_url}"
+    assert str(tam) == f"TaskID: {tam.task}, FileID: {tam.file_id}"
