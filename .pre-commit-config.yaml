@@ -46,6 +46,7 @@ repos:
     hooks:
       - id: mypy
         args: [--config-file=pyproject.toml]
+        additional_dependencies: ["types-requests"]
         exclude: ".*/migrations/.*$|.*/settings.*$|tests|.git.*$"
         require_serial: true
 

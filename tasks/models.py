@@ -61,7 +61,9 @@ class TaskAttachment(models.Model):
         null=True,
     )
     file_url = models.URLField(
-        blank=True, null=True, help_text="Ссылка на внешний файл"
+        blank=True,
+        null=True,
+        help_text="Ссылка на внешний файл",
     )
 
     def __str__(self) -> str:
