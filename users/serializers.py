@@ -19,8 +19,17 @@ class UserSerializer(ModelSerializer):
 class UserWriteSerializer(ModelSerializer):
     class Meta:
         model = User
-        exclude = [
+        fields = [
             "id",
+            "name",
+            "email",
+        ]
+
+
+class UserCreateSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        exclude = [
             "created_at",
             "updated_at",
             "deleted_at",
