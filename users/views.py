@@ -12,7 +12,7 @@ from rest_framework.permissions import (
 )
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.routers import SimpleRouter
+from rest_framework.routers import DefaultRouter
 from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import (
     ModelViewSet,
@@ -37,7 +37,7 @@ from users.serializers import (
 )
 from users.services.user_service import user_service
 
-router = SimpleRouter()
+router = DefaultRouter()
 
 
 @extend_schema(tags=["Users"])

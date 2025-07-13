@@ -1,7 +1,7 @@
 from typing import Type
 
 from drf_spectacular.utils import extend_schema
-from rest_framework.routers import SimpleRouter
+from rest_framework.routers import DefaultRouter
 from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import (
     ModelViewSet,
@@ -15,7 +15,7 @@ from skills.serializers import (
     SkillWriteSerializer,
 )
 
-router = SimpleRouter()
+router = DefaultRouter()
 
 
 @extend_schema(tags=["Skills"])

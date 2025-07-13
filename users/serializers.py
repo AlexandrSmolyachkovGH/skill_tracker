@@ -1,6 +1,7 @@
 from rest_framework.serializers import (
     CharField,
     ModelSerializer,
+    UUIDField,
 )
 
 from users.models import (
@@ -86,6 +87,13 @@ class UserProjectSerializer(ModelSerializer):
 
 
 class UserProjectWriteSerializer(ModelSerializer):
+    user_id = UUIDField()
+    project_id = UUIDField()
+
     class Meta:
         model = UserProject
-        fields = "__all__"
+        fields = [
+            "user_id",
+            "project_id",
+            "role",
+        ]

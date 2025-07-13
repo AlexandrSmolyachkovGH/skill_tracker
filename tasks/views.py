@@ -6,7 +6,7 @@ from rest_framework.filters import (
     OrderingFilter,
     SearchFilter,
 )
-from rest_framework.routers import SimpleRouter
+from rest_framework.routers import DefaultRouter
 from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import (
     ModelViewSet,
@@ -23,7 +23,7 @@ from tasks.serializers import (
     TaskWriteSerializer,
 )
 
-router = SimpleRouter()
+router = DefaultRouter()
 
 
 @extend_schema(tags=["Tasks"])

@@ -86,6 +86,7 @@ class UserProject(models.Model):
         'projects.Project',
         on_delete=models.SET_NULL,
         null=True,
+        related_name='project_users',
     )
     role = models.CharField(
         choices=UserProjectRole.choices,

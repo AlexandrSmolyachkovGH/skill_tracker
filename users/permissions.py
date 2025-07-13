@@ -23,3 +23,8 @@ class InternalSecretPermission(BasePermission):
         ):
             return request.headers.get("Service-Secret") == SERVICE_SECRET
         return True
+
+
+# class TaskProcessPermission(BasePermission):
+#     def has_object_permission(self, request, view, obj):
+#         request.user.has_permission()
