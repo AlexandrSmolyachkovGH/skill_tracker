@@ -78,6 +78,7 @@ class RemoteJWTAuthentication(BaseAuthentication):
         """
         Custom User authorization
         """
+        print("Authorization header:", request.headers.get("Authorization"))
         auth_header = request.headers.get('Authorization')
         if not auth_header or not auth_header.startswith("Bearer "):
             return None

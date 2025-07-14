@@ -7,6 +7,7 @@ from django.db.models.query import QuerySet
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
     IsAuthenticated,
 )
@@ -35,13 +36,29 @@ from users.serializers import UserProjectSerializer
 router = DefaultRouter()
 
 
+class ProjectPagination(PageNumberPagination):
+    page_size = 3
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
 @extend_schema(tags=["Projects"])
 class ProjectViewSet(ModelViewSet):
+    pagination_class = ProjectPagination
+
     def get_queryset(
         self,
     ) -> QuerySet[Project]:
-        user_id = self.request.user.id
-        return Project.objects.filter(project_users__user_id=user_id).all()
+        if self.request.user.role in ["USER"]:
+            user = self.request.user
+            user_id = self.request.user.id
+            role = getattr(user, "role", None)
+            print(f"[DEBUG] Authenticated user: {user}")
+            print(f"[DEBUG] Role: {role}")
+            print("[DEBUG] Returning user projects")
+            return Project.objects.filter(project_users__user_id=user_id).all()
+        print("[DEBUG] Returning all projects")
+        return Project.objects.all()
 
     def get_serializer_class(
         self,

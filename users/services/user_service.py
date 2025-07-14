@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from rest_framework.request import Request
 
 from users.models import User
@@ -23,6 +25,15 @@ class UserService:
             data=serializer.validated_data,
         )
         return new_user
+
+    def delete_user(
+        self,
+        user_id: UUID,
+    ) -> User:
+        deleted_user = self.user_repo.delete_user(
+            user_id=user_id,
+        )
+        return deleted_user
 
 
 user_service = UserService()

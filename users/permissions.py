@@ -17,11 +17,12 @@ class InternalSecretPermission(BasePermission):
         request: Request,
         view: APIView,
     ) -> bool:
-        if (
-            request.method == "POST"
-            and getattr(view, "action", None) == "create"
-        ):
-            return request.headers.get("Service-Secret") == SERVICE_SECRET
+        if request.method in ["POST", "DELETE"] and getattr(
+            view, "action", None
+        ) in ["create", "destroy"]:
+            secret = request.headers.get("Service-Secret")
+            print("Service-Secret received:", secret)
+            return secret == SERVICE_SECRET
         return True
 
 

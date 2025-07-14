@@ -2,10 +2,13 @@ from typing import (
     Any,
     Type,
 )
+from uuid import UUID
 
+from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.authentication import BaseAuthentication
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
     BasePermission,
     IsAuthenticated,
@@ -19,6 +22,7 @@ from rest_framework.viewsets import (
 )
 
 from project.auth import (
+    NoAuth,
     RemoteJWTAuthentication,
 )
 from users.models import (
@@ -40,22 +44,36 @@ from users.services.user_service import user_service
 router = DefaultRouter()
 
 
+class UserPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
 @extend_schema(tags=["Users"])
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserWriteSerializer
+    pagination_class = UserPagination
 
-    def get_authentication_classes(
+    def get_queryset(self) -> QuerySet[User]:
+        user = self.request.user
+        if user.role in ["USER"]:
+            queryset = self.queryset.filter(id=user.id)
+            return queryset
+        return self.queryset
+
+    def get_authenticators(
         self,
-    ) -> list[Type[BaseAuthentication]]:
-        if self.action == "create":
-            return []
-        return [RemoteJWTAuthentication]
+    ) -> list[BaseAuthentication]:
+        if getattr(self, "action", None) in ["create", "destroy"]:
+            return [NoAuth()]
+        return [RemoteJWTAuthentication()]
 
     def get_permissions(
         self,
     ) -> list[BasePermission]:
-        if self.action == "create":
+        if self.action in ["create", "destroy"]:
             return [InternalSecretPermission()]
         return [IsAuthenticated()]
 
@@ -80,6 +98,23 @@ class UserViewSet(ModelViewSet):
         return Response(
             data=response_serializer.data,
             status=status.HTTP_201_CREATED,
+        )
+
+    def destroy(
+        self,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        print("hello from Destroy")
+        user_id = kwargs.get("pk")
+        deleted_record = user_service.delete_user(
+            user_id=UUID(user_id),
+        )
+        response_serializer = UserSerializer(deleted_record)
+        return Response(
+            data=response_serializer.data,
+            status=status.HTTP_200_OK,
         )
 
 
