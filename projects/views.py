@@ -18,6 +18,7 @@ from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import (
     ModelViewSet,
 )
+from rest_framework_nested.routers import NestedSimpleRouter
 
 from projects.models import (
     Project,
@@ -30,6 +31,7 @@ from projects.serializers import (
     ProjectWriteSerializer,
 )
 from projects.services.project_service import project_service
+from tasks.views import TaskViewSet
 from users.models import UserProjectRole
 from users.serializers import UserProjectSerializer
 
@@ -50,14 +52,8 @@ class ProjectViewSet(ModelViewSet):
         self,
     ) -> QuerySet[Project]:
         if self.request.user.role in ["USER"]:
-            user = self.request.user
             user_id = self.request.user.id
-            role = getattr(user, "role", None)
-            print(f"[DEBUG] Authenticated user: {user}")
-            print(f"[DEBUG] Role: {role}")
-            print("[DEBUG] Returning user projects")
             return Project.objects.filter(project_users__user_id=user_id).all()
-        print("[DEBUG] Returning all projects")
         return Project.objects.all()
 
     def get_serializer_class(
@@ -124,3 +120,10 @@ class ProjectViewSet(ModelViewSet):
 
 
 router.register(r"", ProjectViewSet, basename="projects")
+
+project_router = NestedSimpleRouter(
+    parent_router=router,
+    parent_prefix="",
+    lookup="projects",
+)
+project_router.register(r"tasks", TaskViewSet, basename="tasks")

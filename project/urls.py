@@ -8,6 +8,7 @@ from drf_spectacular.views import (
 from rest_framework.permissions import AllowAny
 
 from project.views import api_root
+from projects.views import project_router as project_nested_router
 from projects.views import router as project_router
 from skills.views import router as skill_router
 from tasks.views import router as task_router
@@ -40,5 +41,6 @@ urlpatterns = [
     path("api/users/", include(user_router.urls)),
     path("api/skills/", include(skill_router.urls)),
     path("api/projects/", include(project_router.urls)),
-    path("api/tasks/", include(task_router.urls)),
+    # path("api/tasks/", include(task_router.urls)),
+    path("api/projects/", include(project_nested_router.urls)),
 ]

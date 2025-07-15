@@ -1,11 +1,13 @@
 from rest_framework.serializers import (
     CharField,
+    ChoiceField,
     ModelSerializer,
 )
 
 from tasks.models import (
     Task,
     TaskAttachment,
+    TaskStatus,
 )
 
 
@@ -29,6 +31,38 @@ class TaskSerializer(ModelSerializer):
             "assigned_to",
             "project_name",
             "project",
+        ]
+
+
+class TaskCreateSerializer(ModelSerializer):
+    status = ChoiceField(
+        choices=TaskStatus.choices,
+        default=TaskStatus.NEW,
+        required=False,
+    )
+
+    class Meta:
+        model = Task
+        fields = [
+            "title",
+            "status",
+        ]
+
+
+class TaskPartialUpdateSerializer(ModelSerializer):
+    status = ChoiceField(
+        choices=TaskStatus.choices,
+        required=False,
+    )
+    title = CharField(
+        required=False,
+    )
+
+    class Meta:
+        model = Task
+        fields = [
+            "title",
+            "status",
         ]
 
 

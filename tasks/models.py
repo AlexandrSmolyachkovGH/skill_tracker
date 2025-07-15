@@ -1,9 +1,13 @@
 import uuid
+from typing import Type
 
 from django.core.validators import MinLengthValidator
 from django.db import models
 
-from common.models.base import TimeStampedModel
+from common.models.base import (
+    TaskManager,
+    TimeStampedModel,
+)
 
 
 class TaskStatus(models.TextChoices):
@@ -14,6 +18,7 @@ class TaskStatus(models.TextChoices):
 
 
 class Task(TimeStampedModel):
+    objects: Type[TaskManager] = TaskManager()
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
