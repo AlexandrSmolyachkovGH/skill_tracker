@@ -35,6 +35,14 @@ class TaskSerializer(ModelSerializer):
 
 
 class TaskCreateSerializer(ModelSerializer):
+    user_name = CharField(
+        source="assigned_to.name",
+        read_only=True,
+    )
+    project_name = CharField(
+        source="project.name",
+        read_only=True,
+    )
     status = ChoiceField(
         choices=TaskStatus.choices,
         default=TaskStatus.NEW,
@@ -44,12 +52,32 @@ class TaskCreateSerializer(ModelSerializer):
     class Meta:
         model = Task
         fields = [
+            "id",
             "title",
             "status",
+            "user_name",
+            "assigned_to",
+            "project_name",
+            "project",
+        ]
+        read_only_fields = [
+            "id",
+            "user_name",
+            "assigned_to",
+            "project_name",
+            "project",
         ]
 
 
 class TaskPartialUpdateSerializer(ModelSerializer):
+    user_name = CharField(
+        source="assigned_to.name",
+        read_only=True,
+    )
+    project_name = CharField(
+        source="project.name",
+        read_only=True,
+    )
     status = ChoiceField(
         choices=TaskStatus.choices,
         required=False,
@@ -61,8 +89,20 @@ class TaskPartialUpdateSerializer(ModelSerializer):
     class Meta:
         model = Task
         fields = [
+            "id",
             "title",
             "status",
+            "user_name",
+            "assigned_to",
+            "project_name",
+            "project",
+        ]
+        read_only_fields = [
+            "id",
+            "user_name",
+            "assigned_to",
+            "project_name",
+            "project",
         ]
 
 

@@ -1,26 +1,75 @@
 from rest_framework.serializers import (
+    CharField,
     ChoiceField,
     ModelSerializer,
+    PrimaryKeyRelatedField,
     UUIDField,
 )
 
 from projects.models import (
     Project,
+    ProjectStatus,
 )
-from users.models import UserProjectRole
+from users.models import (
+    User,
+    UserProject,
+)
+from users.serializers import UserSerializer
 
 
 class ProjectSerializer(ModelSerializer):
+    owner = UserSerializer(
+        read_only=True,
+    )
+
     class Meta:
         model = Project
-        fields = '__all__'
+        fields = [
+            "id",
+            "name",
+            "status",
+            "owner",
+            "created_at",
+            "updated_at",
+            "deleted_at",
+        ]
+        read_only_fields = [
+            "id",
+            "name",
+            "status",
+            "owner",
+            "created_at",
+            "updated_at",
+            "deleted_at",
+        ]
 
 
 class ProjectWriteSerializer(ModelSerializer):
+    owner = UserSerializer(
+        read_only=True,
+    )
+    name = CharField(
+        required=False,
+    )
+    status = ChoiceField(
+        choices=ProjectStatus.choices,
+        required=False,
+    )
+
     class Meta:
         model = Project
-        exclude = [
+        fields = [
             "id",
+            "name",
+            "status",
+            "owner",
+            "created_at",
+            "updated_at",
+            "deleted_at",
+        ]
+        read_only_fields = [
+            "id",
+            "owner",
             "created_at",
             "updated_at",
             "deleted_at",
@@ -28,9 +77,22 @@ class ProjectWriteSerializer(ModelSerializer):
 
 
 class ProjectCreateSerializer(ModelSerializer):
+    owner = UserSerializer(
+        read_only=True,
+    )
+
     class Meta:
         model = Project
-        exclude = [
+        fields = [
+            "id",
+            "name",
+            "status",
+            "owner",
+            "created_at",
+            "updated_at",
+            "deleted_at",
+        ]
+        read_only_fields = [
             "id",
             "owner",
             "created_at",
@@ -40,16 +102,31 @@ class ProjectCreateSerializer(ModelSerializer):
 
 
 class AddToProjectSerializer(ModelSerializer):
-    user_id = UUIDField()
-    role = ChoiceField(
-        choices=UserProjectRole.choices,
-        default=UserProjectRole.OBSERVER,
-        required=False,
+    user = UserSerializer(
+        read_only=True,
     )
+    user_id = PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        source='user',
+    )
+    project = ProjectSerializer(
+        read_only=True,
+    )
+    project_id = UUIDField(source="project.id", read_only=True)
 
     class Meta:
-        model = Project
+        model = UserProject
         fields = [
+            "id",
+            "project_id",
+            "project",
             "user_id",
+            "user",
             "role",
+        ]
+        read_only_fields = [
+            "id",
+            "project_id",
+            "project",
+            "user",
         ]

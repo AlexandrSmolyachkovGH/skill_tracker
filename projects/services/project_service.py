@@ -4,18 +4,9 @@ from rest_framework.request import Request
 
 from projects.models import Project
 from projects.repositories.project_repository import ProjectRepository
-from projects.serializers import (
-    AddToProjectSerializer,
-    ProjectSerializer,
-    ProjectWriteSerializer,
-)
 from users.models import (
     UserProject,
     UserProjectRole,
-)
-from users.repositories.user_project_repository import UserProjectRepository
-from users.serializers import (
-    UserProjectWriteSerializer,
 )
 from users.services.user_project_service import user_project_service
 
@@ -28,19 +19,18 @@ class ProjectService:
     @transaction.atomic
     def create_project(
         self,
+        valid_data: dict,
         request: Request,
     ) -> Project:
         """
         Create Project and User_Project entities
         """
-        data = dict(request.data)
-        serializer = ProjectWriteSerializer(
-            data=data,
-        )
-        serializer.is_valid(raise_exception=True)
-
+        owner_data = {
+            "owner_id": request.user.id,
+        }
+        valid_data.update(owner_data)
         new_project = self.repo.create_project(
-            data=serializer.validated_data,
+            data=valid_data,
         )
         user_project_data = {
             "user_id": request.user.id,
@@ -51,6 +41,15 @@ class ProjectService:
             data=user_project_data,
         )
         return new_project
+
+    def delete_project(
+        self,
+        instance: Project,
+    ) -> Project:
+        deleted_project = self.repo.delete_project(
+            deleted_project=instance,
+        )
+        return deleted_project
 
     def add_user_to_project(
         self,

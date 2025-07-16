@@ -3,18 +3,19 @@ from typing import (
     Type,
 )
 
-from django.db.models.query import QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
-from rest_framework import status
-from rest_framework.decorators import action
+from rest_framework import (
+    mixins,
+    status,
+    viewsets,
+)
 from rest_framework.filters import (
     OrderingFilter,
     SearchFilter,
 )
-from rest_framework.permissions import (
-    IsAuthenticated,
-)
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
@@ -41,8 +42,15 @@ from tasks.services.task_service import task_service
 router = DefaultRouter()
 
 
+class TaskPagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
 @extend_schema(tags=["Tasks"])
 class TaskViewSet(ModelViewSet):
+    pagination_class = TaskPagination
     http_method_names = ["get", "post", "patch", "delete"]
     filter_backends = [
         DjangoFilterBackend,
@@ -53,15 +61,10 @@ class TaskViewSet(ModelViewSet):
     search_fields = ["title"]
     ordering_fields = ["created_at", "title"]
 
-    def get_queryset(
-        self,
-    ) -> QuerySet[Task]:
-        if self.request.user.role in ["USER"]:
-            user_id = self.request.user.id
-            return Task.objects.filter(
-                project__projectmembership__user_id=user_id
-            )
-        return Task.objects.all()
+    def get_permissions(self) -> list[BasePermission]:
+        if self.action == 'destroy':
+            return [OwnerOrAdminPermission()]
+        return super().get_permissions()
 
     def get_serializer_class(
         self,
@@ -80,16 +83,11 @@ class TaskViewSet(ModelViewSet):
         *args: Any,
         **kwargs: Any,
     ) -> Response:
-        task_id = kwargs.get("pk")
-        project_id = kwargs.get("projects_pk")
-        data = {
-            "id": task_id,
-            "project_id": project_id,
-        }
         task = task_service.get_task(
-            data=data,
+            task_id=kwargs["pk"],
+            project_id=kwargs["projects_pk"],
         )
-        response_serializer = TaskSerializer(task)
+        response_serializer = self.get_serializer(instance=task)
         return Response(
             data=response_serializer.data,
             status=status.HTTP_200_OK,
@@ -101,11 +99,13 @@ class TaskViewSet(ModelViewSet):
         *args: Any,
         **kwargs: Any,
     ) -> Response:
-        data = {"project_id": kwargs.get("projects_pk")}
         tasks = task_service.get_tasks(
-            data=data,
+            project_id=kwargs["projects_pk"],
         )
-        response_serializer = TaskSerializer(tasks, many=True)
+        response_serializer = TaskSerializer(
+            instance=tasks,
+            many=True,
+        )
         return Response(
             data=response_serializer.data,
             status=status.HTTP_200_OK,
@@ -117,11 +117,17 @@ class TaskViewSet(ModelViewSet):
         *args: Any,
         **kwargs: Any,
     ) -> Response:
+        serializer = self.get_serializer(
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
         new_task = task_service.create_task(
             request=request,
             project_id=kwargs["projects_pk"],
         )
-        response_serializer = TaskSerializer(new_task)
+        response_serializer = self.get_serializer(
+            instance=new_task,
+        )
         return Response(
             data=response_serializer.data,
             status=status.HTTP_201_CREATED,
@@ -134,38 +140,56 @@ class TaskViewSet(ModelViewSet):
         **kwargs: Any,
     ) -> Response:
         """
-        Update only task title and/or status.
+        Update only task title and/or status
         """
+        serializer = self.get_serializer(
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
         updated_task = task_service.partial_update(
             request=request,
             project_id=kwargs["projects_pk"],
             task_id=kwargs["pk"],
         )
-        response_serializer = TaskSerializer(updated_task)
+        response_serializer = self.get_serializer(
+            isinstance=updated_task,
+        )
         return Response(
             data=response_serializer.data,
             status=status.HTTP_200_OK,
         )
 
-    # @action(
-    #     methods=["get"],
-    #     detail=False,
-    #     url_path="get-all-projects-tasks",
-    #     permission_classes=[IsAuthenticated],
-    # )
-    # def get_all_projects_tasks(
-    #     self,
-    #     request: Request,
-    #     *args: Any,
-    #     **kwargs: Any,
-    # ) -> Response:
-    #     queryset = Task.objects.all()
-    #     all_tasks = task_service.get_all_tasks()
-    #     response_serializer = TaskSerializer(all_tasks, many=True)
-    #     return Response(
-    #         data=response_serializer.data,
-    #         status=status.HTTP_200_OK,
-    #     )
+
+@extend_schema(tags=["Tasks"])
+class AllTasksViewSet(
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    pagination_class = TaskPagination
+    http_method_names = ["get"]
+    serializer_class = TaskSerializer
+    filterset_fields = ["title", "status"]
+    search_fields = ["title"]
+    ordering_fields = ["created_at", "title"]
+
+    def list(
+        self,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        """
+        Return a list of all tasks
+        """
+        all_tasks = task_service.get_all_tasks()
+        response_serializer = self.serializer_class(
+            all_tasks,
+            many=True,
+        )
+        return Response(
+            data=response_serializer.data,
+            status=status.HTTP_200_OK,
+        )
 
 
 @extend_schema(tags=["Task-Attachments"])
@@ -180,7 +204,7 @@ class TaskAttachmentViewSet(ModelViewSet):
         return TaskAttachmentWriteSerializer
 
 
-# router.register(r"", TaskViewSet, basename="tasks")
-router.register(
-    r"attachments/", TaskAttachmentViewSet, basename="task-attachments"
-)
+router.register(r"all-tasks", AllTasksViewSet, basename="all-tasks")
+# router.register(
+#     r"attachments", TaskAttachmentViewSet, basename="task-attachments"
+# )

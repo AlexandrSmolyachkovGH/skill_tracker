@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from django.db.models.query import QuerySet
+from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 
 from tasks.models import Task
@@ -13,14 +14,28 @@ class TaskService:
 
     def get_task(
         self,
-        data: dict,
+        task_id: UUID,
+        project_id: UUID,
     ) -> Task:
+        if not isinstance(task_id, UUID):
+            raise ValidationError("Invalid type task_id")
+        if not isinstance(project_id, UUID):
+            raise ValidationError("Invalid type project_id")
+        data = {
+            "id": task_id,
+            "project_id": project_id,
+        }
         return self.repo.get_task(data=data)
 
     def get_tasks(
         self,
-        data: dict,
+        project_id: UUID,
     ) -> QuerySet[Task]:
+        if not isinstance(project_id, UUID):
+            raise ValidationError("Invalid type project_id")
+        data = {
+            "project_id": project_id,
+        }
         return self.repo.get_tasks(data=data)
 
     def get_all_tasks(self) -> QuerySet[Task]:
