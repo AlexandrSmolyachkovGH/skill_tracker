@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import pytest
 
 from projects.models import Project
@@ -9,6 +11,7 @@ from users.models import User
 @pytest.fixture
 def f_user():
     user = User.objects.create(
+        id=uuid4(),
         name='Fake',
         email='fake@fake.fake',
     )

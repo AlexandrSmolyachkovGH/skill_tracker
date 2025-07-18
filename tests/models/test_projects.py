@@ -13,6 +13,7 @@ def test_project_model(f_user) -> None:
         status=ProjectStatus.ACTIVE,
         owner=f_user,
     )
+    print(project_model)
     assert project_model.name == 'TestProject'
     assert project_model.status == 'active'
     assert project_model.get_status_display() == 'Активный'

@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 
 from users.models import (
@@ -11,6 +13,7 @@ from users.models import (
 @pytest.mark.django_db
 def test_create_user_model() -> None:
     user_model = User.objects.create(
+        id=uuid.uuid4(),
         name='TestName',
         email='test@test.test',
     )
