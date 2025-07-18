@@ -11,7 +11,8 @@ from project.views import api_root
 from projects.views import project_router as project_nested_router
 from projects.views import router as project_router
 from projects.views import task_router as task_nested_router
-from skills.views import router as skill_router
+
+# from skills.views import router as skill_router
 from tasks.views import router as task_router
 from users.views import router as user_router
 from users.views import user_project_router
@@ -42,7 +43,7 @@ urlpatterns = [
     # CRUDs:
     path("api/users/", include(user_router.urls)),
     path("api/user-projects/", include(user_project_router.urls)),
-    path("api/skills/", include(skill_router.urls)),
+    # path("api/skills/", include(skill_router.urls)),
     path("api/projects/", include(project_router.urls)),
     path("api/tasks/", include(task_router.urls)),
     path("api/projects/", include(project_nested_router.urls)),

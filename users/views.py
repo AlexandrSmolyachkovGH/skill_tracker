@@ -39,12 +39,14 @@ from users.permissions import InternalSecretPermission
 from users.serializers import (
     UserCreateSerializer,
     UserProjectSerializer,
+    UserProjectUpdateSerializer,
     UserProjectWriteSerializer,
     UserSerializer,
     UserSkillSerializer,
     UserSkillWriteSerializer,
     UserWriteSerializer,
 )
+from users.services.user_project_service import user_project_service
 from users.services.user_service import user_service
 
 router = DefaultRouter()
@@ -159,47 +161,67 @@ class UserViewSet(ModelViewSet):
         )
 
 
-@extend_schema(tags=["Users-Skills"])
-class UserSkillViewSet(ModelViewSet):
-    queryset = UserSkill.objects.all()
-
-    def get_serializer_class(
-        self,
-    ) -> Type[BaseSerializer]:
-        if self.action in ["list", "retrieve"]:
-            return UserSkillSerializer
-        return UserSkillWriteSerializer
+# @extend_schema(tags=["Users-Skills"])
+# class UserSkillViewSet(ModelViewSet):
+#     queryset = UserSkill.objects.all()
+#
+#     def get_serializer_class(
+#         self,
+#     ) -> Type[BaseSerializer]:
+#         if self.action in ["list", "retrieve"]:
+#             return UserSkillSerializer
+#         return UserSkillWriteSerializer
 
 
 @extend_schema(tags=["Users-Projects"])
 class UserProjectViewSet(ModelViewSet):
+    http_method_names = ["get", "post", "patch", "delete"]
 
     def get_queryset(self) -> QuerySet[User]:
-        # user = self.request.user
-        # print("DEBUG: inside get_queryset")
-        # if user.role in ["USER"]:
-        #     print("DEBUG: IF get_queryset")
-        #     queryset = UserProject.objects.filter(user_id=user.id)
-        #     return queryset
+        user = self.request.user
+        print("DEBUG: inside get_queryset")
+        if user.role in ["USER"]:
+            print("DEBUG: IF get_queryset")
+            queryset = UserProject.objects.filter(user_id=user.id)
+            return queryset
         return UserProject.objects.all()
 
     def get_serializer_class(
         self,
     ) -> Type[BaseSerializer]:
-        if self.action in ["list", "retrieve"]:
+        if self.action in ["list", "retrieve", "destroy"]:
             return UserProjectSerializer
+        if self.action in ["partial_update"]:
+            return UserProjectUpdateSerializer
         return UserProjectWriteSerializer
 
-    # def list(self, request, *args, **kwargs):
-    #     lst = UserProject.objects.filter(user_id=request.user.id)
-    #     return Response(
-    #         data=lst,
-    #         status=status.HTTP_200_OK,
-    #     )
+    def partial_update(
+        self,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        """
+        Change user role only
+        """
+        user_project_id = kwargs["pk"]
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        updated_record = user_project_service.update_user_project(
+            user_project_id=user_project_id,
+            request=request,
+        )
+        response_serializer = self.get_serializer(
+            instance=updated_record,
+        )
+        return Response(
+            data=response_serializer.data,
+            status=status.HTTP_200_OK,
+        )
 
 
 router.register(r"", UserViewSet, basename="users")
-router.register(r"skills", UserSkillViewSet, basename="user-skills")
+# router.register(r"skills", UserSkillViewSet, basename="user-skills")
 
 user_project_router = DefaultRouter()
 user_project_router.register(r"", UserProjectViewSet, basename="user-projects")

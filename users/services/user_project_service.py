@@ -1,6 +1,6 @@
 from rest_framework.request import Request
 
-from users.models import UserProject
+from users.models import UserProject, UserProjectRole
 from users.repositories.user_project_repository import UserProjectRepository
 from users.serializers import UserProjectWriteSerializer
 
@@ -26,6 +26,18 @@ class UserProjectService:
             data=user_project_serializer.validated_data,
         )
         return new_record
+
+    def update_user_project(
+        self,
+        user_project_id: int,
+        request: Request,
+    ) -> UserProject:
+        role = request.data["role"]
+        updated_user = self.repo.update_user_project(
+            user_project_id=user_project_id,
+            role=role,
+        )
+        return updated_user
 
 
 user_project_service = UserProjectService()

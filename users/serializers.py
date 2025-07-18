@@ -1,3 +1,4 @@
+from rest_framework.fields import ChoiceField
 from rest_framework.serializers import (
     CharField,
     ModelSerializer,
@@ -7,6 +8,7 @@ from rest_framework.serializers import (
 from users.models import (
     User,
     UserProject,
+    UserProjectRole,
     UserSkill,
 )
 
@@ -118,6 +120,39 @@ class UserProjectWriteSerializer(ModelSerializer):
             "user_id",
             "project_id",
             "role",
+        ]
+
+
+class UserProjectUpdateSerializer(ModelSerializer):
+    role = ChoiceField(
+        required=True,
+        choices=UserProjectRole.choices,
+    )
+    user_name = CharField(
+        source="user.name",
+        read_only=True,
+    )
+    project_name = CharField(
+        source="project.name",
+        read_only=True,
+    )
+
+    class Meta:
+        model = UserProject
+        fields = [
+            "id",
+            "user_id",
+            "user_name",
+            "role",
+            "project",
+            "project_name",
+        ]
+        read_only_fields = [
+            "id",
+            "user_id",
+            "user_name",
+            "project",
+            "project_name",
         ]
 
 

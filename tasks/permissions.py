@@ -67,9 +67,16 @@ class TaskIsNotDeletedPermission(BasePermission):
         view: APIView,
     ) -> bool:
         task_id = view.kwargs.get(self.task_pk)
-        user_role = request.user.role
-        if user_role == "USER":
-            task = Task.objects.get(id=task_id)
+        if not task_id:
+            return False
+
+        if request.user.role == "USER":
+            try:
+                task = Task.objects.get(id=task_id)
+            except Task.DoesNotExist:
+                return False
+
             if task.deleted_at:
                 return False
+
         return True

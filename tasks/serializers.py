@@ -10,7 +10,6 @@ from tasks.models import (
     TaskAttachment,
     TaskStatus,
 )
-from users.serializers import ListUsersProjectSerializer, UserSerializer
 
 
 class TaskSerializer(ModelSerializer):
@@ -139,8 +138,24 @@ class TaskAttachmentSerializer(ModelSerializer):
 
 
 class TaskAttachmentWriteSerializer(ModelSerializer):
+    task_name = CharField(
+        source="task.title",
+        read_only=True,
+    )
+    file_url = CharField(
+        required=True,
+    )
+
     class Meta:
         model = TaskAttachment
-        exclude = [
+        fields = [
             "id",
+            "task",
+            "task_name",
+            "file_url",
+        ]
+        read_only_fields = [
+            "id",
+            "task",
+            "task_name",
         ]

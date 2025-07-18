@@ -1,7 +1,10 @@
 from uuid import UUID
 
 from django.db.models.query import QuerySet
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import (
+    NotFound,
+    ValidationError,
+)
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 
@@ -14,6 +17,19 @@ from users.models import User
 class TaskService:
     def __init__(self) -> None:
         self.repo = task_repo
+
+    def check_task_in_project(
+        self,
+        task_id: UUID,
+        project_id: UUID,
+    ) -> Task:
+        try:
+            task = Task.objects.get(id=task_id, project_id=project_id)
+        except Task.DoesNotExist as exc:
+            raise NotFound(
+                "Task not found or does not belong to this project"
+            ) from exc
+        return task
 
     def get_task(
         self,
@@ -67,17 +83,14 @@ class TaskService:
         project_id: UUID,
         task_id: UUID,
     ) -> Task:
-        filter_data = {
-            "project": project_id,
-            "id": task_id,
-        }
+        task = self.check_task_in_project(task_id, project_id)
         update_data = {
             key: request.data[key]
             for key in ["title", "status"]
             if key in request.data
         }
         updated_task = self.repo.partial_update_task(
-            filter_data=filter_data,
+            task=task,
             update_data=update_data,
         )
         return updated_task
@@ -87,11 +100,8 @@ class TaskService:
         project_id: UUID,
         task_id: UUID,
     ) -> Task:
-        task = get_object_or_404(Task, id=task_id)
-        if str(task.project.id) != project_id:
-            raise ValidationError("Invalid project id")
-        if task.deleted_at:
-            raise ValidationError("Task has already been deleted")
+        task = self.check_task_in_project(task_id, project_id)
+
         deleted_task = self.repo.delete_task(
             task=task,
         )

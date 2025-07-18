@@ -34,16 +34,17 @@ class TaskRepository:
 
     def partial_update_task(
         self,
-        filter_data: dict,
+        task: Task,
+        # filter_data: dict,
         update_data: dict,
     ) -> Task:
-        updated_task = Task.objects.filter(**filter_data).first()
-        if not updated_task:
-            raise NotFound("Task not found or already deleted")
+        # updated_task = Task.objects.filter(**filter_data).first()
+        # if not updated_task:
+        #     raise NotFound("Task not found or already deleted")
         for key, value in update_data.items():
-            setattr(updated_task, key, value)
-        updated_task.save()
-        return updated_task
+            setattr(task, key, value)
+        task.save()
+        return task
 
     def delete_task(
         self,

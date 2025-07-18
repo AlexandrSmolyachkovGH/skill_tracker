@@ -4,6 +4,7 @@ from typing import (
 )
 from uuid import UUID
 
+from django.db.models import QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import (
@@ -42,6 +43,7 @@ from tasks.serializers import (
     TaskPartialUpdateSerializer,
     TaskSerializer,
 )
+from tasks.services.task_attachment_service import task_attachment_service
 from tasks.services.task_service import task_service
 
 router = DefaultRouter()
@@ -166,7 +168,7 @@ class TaskViewSet(ModelViewSet):
             task_id=kwargs["pk"],
         )
         response_serializer = self.get_serializer(
-            isinstance=updated_task,
+            instance=updated_task,
         )
         return Response(
             data=response_serializer.data,
@@ -226,14 +228,81 @@ class AllTasksViewSet(
 
 @extend_schema(tags=["Task-Attachments"])
 class TaskAttachmentViewSet(ModelViewSet):
-    queryset = TaskAttachment.objects.all()
+    http_method_names = ["get", "post", "patch", "delete"]
+
+    def get_permissions(self) -> list[BasePermission]:
+        if self.action == 'destroy':
+            return [OwnerOrAdminPermission()]
+        if self.action in ['partial_update']:
+            return [
+                TaskIsNotDeletedPermission(task_pk="tasks_pk"),
+                ProjectIsNotDeletedPermission(project_pk="projects_pk"),
+            ]
+        return super().get_permissions()
+
+    def get_queryset(
+        self,
+    ) -> QuerySet[TaskAttachment]:
+        if self.request.user.role in ["USER"]:
+            user_id = self.request.user.id
+            return TaskAttachment.objects.filter(
+                task__project__project_users__user_id=user_id,
+            ).all()
+        return TaskAttachment.objects.all()
 
     def get_serializer_class(
         self,
     ) -> Type[BaseSerializer]:
-        if self.action in ["list", "retrieve"]:
+        if self.action in ["list", "retrieve", "destroy"]:
             return TaskAttachmentSerializer
         return TaskAttachmentWriteSerializer
+
+    def create(
+        self,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        serializer = self.get_serializer(
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
+        new_attachment = task_attachment_service.create(
+            request=request,
+            project_id=kwargs["projects_pk"],
+            task_id=kwargs["tasks_pk"],
+        )
+        response_serializer = self.get_serializer(
+            instance=new_attachment,
+        )
+        return Response(
+            data=response_serializer.data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    def partial_update(
+        self,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        serializer = self.get_serializer(
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
+        attachment = task_attachment_service.update(
+            request=request,
+            attachment_id=kwargs["pk"],
+            project_id=kwargs["projects_pk"],
+            task_id=kwargs["tasks_pk"],
+        )
+        response_serializer = self.get_serializer(
+            instance=attachment,
+        )
+        return Response(
+            data=response_serializer.data,
+            status=status.HTTP_200_OK,
+        )
 
 
 router.register(
