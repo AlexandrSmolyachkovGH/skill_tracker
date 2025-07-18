@@ -2,6 +2,7 @@ from typing import (
     Any,
     Type,
 )
+from uuid import UUID
 
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
@@ -24,18 +25,22 @@ from rest_framework.viewsets import (
     ModelViewSet,
 )
 
+from projects.permissions import (
+    ProjectIsNotDeletedPermission,
+)
 from tasks.models import (
-    Task,
     TaskAttachment,
 )
-from tasks.permissions import OwnerOrAdminPermission
+from tasks.permissions import (
+    OwnerOrAdminPermission,
+    TaskIsNotDeletedPermission,
+)
 from tasks.serializers import (
     TaskAttachmentSerializer,
     TaskAttachmentWriteSerializer,
     TaskCreateSerializer,
     TaskPartialUpdateSerializer,
     TaskSerializer,
-    TaskWriteSerializer,
 )
 from tasks.services.task_service import task_service
 
@@ -64,18 +69,23 @@ class TaskViewSet(ModelViewSet):
     def get_permissions(self) -> list[BasePermission]:
         if self.action == 'destroy':
             return [OwnerOrAdminPermission()]
+        if self.action in ['partial_update']:
+            return [
+                TaskIsNotDeletedPermission(task_pk="pk"),
+                ProjectIsNotDeletedPermission(project_pk="projects_pk"),
+            ]
         return super().get_permissions()
 
     def get_serializer_class(
         self,
     ) -> Type[BaseSerializer]:
-        if self.action in ["list", "retrieve"]:
+        if self.action in ["list", "retrieve", "destroy"]:
             return TaskSerializer
         if self.action in ["create"]:
             return TaskCreateSerializer
         if self.action in ["partial_update"]:
             return TaskPartialUpdateSerializer
-        return TaskWriteSerializer
+        return TaskSerializer
 
     def retrieve(
         self,
@@ -84,10 +94,12 @@ class TaskViewSet(ModelViewSet):
         **kwargs: Any,
     ) -> Response:
         task = task_service.get_task(
-            task_id=kwargs["pk"],
-            project_id=kwargs["projects_pk"],
+            task_id=UUID(kwargs["pk"]),
+            project_id=UUID(kwargs["projects_pk"]),
         )
-        response_serializer = self.get_serializer(instance=task)
+        response_serializer = self.get_serializer(
+            instance=task,
+        )
         return Response(
             data=response_serializer.data,
             status=status.HTTP_200_OK,
@@ -100,7 +112,9 @@ class TaskViewSet(ModelViewSet):
         **kwargs: Any,
     ) -> Response:
         tasks = task_service.get_tasks(
-            project_id=kwargs["projects_pk"],
+            project_id=UUID(
+                kwargs["projects_pk"],
+            ),
         )
         response_serializer = TaskSerializer(
             instance=tasks,
@@ -159,6 +173,24 @@ class TaskViewSet(ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+    def destroy(
+        self,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        deleted_task = task_service.delete_task(
+            task_id=kwargs["pk"],
+            project_id=kwargs["projects_pk"],
+        )
+        response_serializer = self.get_serializer(
+            instance=deleted_task,
+        )
+        return Response(
+            data=response_serializer.data,
+            status=status.HTTP_200_OK,
+        )
+
 
 @extend_schema(tags=["Tasks"])
 class AllTasksViewSet(
@@ -204,7 +236,8 @@ class TaskAttachmentViewSet(ModelViewSet):
         return TaskAttachmentWriteSerializer
 
 
-router.register(r"all-tasks", AllTasksViewSet, basename="all-tasks")
-# router.register(
-#     r"attachments", TaskAttachmentViewSet, basename="task-attachments"
-# )
+router.register(
+    r"all-tasks",
+    AllTasksViewSet,
+    basename="all-tasks",
+)

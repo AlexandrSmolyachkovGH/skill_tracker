@@ -46,6 +46,8 @@ class ProjectService:
         self,
         instance: Project,
     ) -> Project:
+        if instance.deleted_at:
+            raise ValidationError("Project has already been deleted")
         deleted_project = self.repo.delete_project(
             deleted_project=instance,
         )
@@ -59,7 +61,7 @@ class ProjectService:
         Add a new user to an existing project
         """
         if not data["user_id"]:
-            raise ValidationError("user_id is required")
+            raise ValidationError("Field user_id is required")
         new_record = self.user_project_service.create_user_project(
             data=data,
         )

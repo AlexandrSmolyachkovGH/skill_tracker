@@ -1,9 +1,12 @@
+from typing import Any
+
 from rest_framework.permissions import (
     BasePermission,
 )
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
+from tasks.models import Task
 from users.models import (
     UserProject,
     UserProjectRole,
@@ -42,3 +45,31 @@ class OwnerOrAdminPermission(BasePermission):
             return True
         except UserProject.DoesNotExist:
             return False
+
+
+class TaskIsNotDeletedPermission(BasePermission):
+    """
+    Permission to receive only not deleted tasks
+    """
+
+    def __init__(
+        self,
+        *args: Any,
+        task_pk: str = "pk",
+        **kwargs: Any,
+    ) -> None:
+        self.task_pk = task_pk
+        super().__init__(*args, **kwargs)
+
+    def has_permission(
+        self,
+        request: Request,
+        view: APIView,
+    ) -> bool:
+        task_id = view.kwargs.get(self.task_pk)
+        user_role = request.user.role
+        if user_role == "USER":
+            task = Task.objects.get(id=task_id)
+            if task.deleted_at:
+                return False
+        return True

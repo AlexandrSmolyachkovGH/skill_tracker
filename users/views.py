@@ -5,9 +5,14 @@ from typing import (
 from uuid import UUID
 
 from django.db.models import QuerySet
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.authentication import BaseAuthentication
+from rest_framework.filters import (
+    OrderingFilter,
+    SearchFilter,
+)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
     BasePermission,
@@ -32,6 +37,7 @@ from users.models import (
 )
 from users.permissions import InternalSecretPermission
 from users.serializers import (
+    UserCreateSerializer,
     UserProjectSerializer,
     UserProjectWriteSerializer,
     UserSerializer,
@@ -52,16 +58,23 @@ class UserPagination(PageNumberPagination):
 
 @extend_schema(tags=["Users"])
 class UserViewSet(ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserWriteSerializer
     pagination_class = UserPagination
+    filter_backends = [
+        DjangoFilterBackend,
+        OrderingFilter,
+        SearchFilter,
+    ]
+    filterset_fields = ["name"]
+    search_fields = ["name"]
+    ordering_fields = ["created_at", "name"]
+    http_method_names = ["get", "post", "patch", "delete"]
 
     def get_queryset(self) -> QuerySet[User]:
         user = self.request.user
         if user.role in ["USER"]:
-            queryset = self.queryset.filter(id=user.id)
+            queryset = User.objects.filter(id=user.id)
             return queryset
-        return self.queryset
+        return User.objects.all()
 
     def get_authenticators(
         self,
@@ -80,8 +93,10 @@ class UserViewSet(ModelViewSet):
     def get_serializer_class(
         self,
     ) -> Type[BaseSerializer]:
-        if self.action in ["list", "retrieve"]:
+        if self.action in ["list", "retrieve", "destroy"]:
             return UserSerializer
+        if self.action in ["create"]:
+            return UserCreateSerializer
         return UserWriteSerializer
 
     def create(
@@ -90,11 +105,16 @@ class UserViewSet(ModelViewSet):
         *args: Any,
         **kwargs: Any,
     ) -> Response:
-        print("hello from Create")
-        user_record = user_service.create_user(
-            request=request,
+        serializer = self.get_serializer(
+            data=request.data,
         )
-        response_serializer = UserSerializer(user_record)
+        serializer.is_valid(raise_exception=True)
+        user_record = user_service.create_user(
+            data=serializer.data,
+        )
+        response_serializer = self.get_serializer(
+            instance=user_record,
+        )
         return Response(
             data=response_serializer.data,
             status=status.HTTP_201_CREATED,
@@ -106,12 +126,33 @@ class UserViewSet(ModelViewSet):
         *args: Any,
         **kwargs: Any,
     ) -> Response:
-        print("hello from Destroy")
-        user_id = kwargs.get("pk")
         deleted_record = user_service.delete_user(
-            user_id=UUID(user_id),
+            user_id=UUID(kwargs.get("pk")),
         )
-        response_serializer = UserSerializer(deleted_record)
+        response_serializer = self.get_serializer(
+            instance=deleted_record,
+        )
+        return Response(
+            data=response_serializer.data,
+            status=status.HTTP_200_OK,
+        )
+
+    def partial_update(
+        self,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        serializer = self.get_serializer(
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
+        user_record = user_service.update_user(
+            request=request,
+        )
+        response_serializer = self.get_serializer(
+            instance=user_record,
+        )
         return Response(
             data=response_serializer.data,
             status=status.HTTP_200_OK,
@@ -132,7 +173,15 @@ class UserSkillViewSet(ModelViewSet):
 
 @extend_schema(tags=["Users-Projects"])
 class UserProjectViewSet(ModelViewSet):
-    queryset = UserProject.objects.all()
+
+    def get_queryset(self) -> QuerySet[User]:
+        # user = self.request.user
+        # print("DEBUG: inside get_queryset")
+        # if user.role in ["USER"]:
+        #     print("DEBUG: IF get_queryset")
+        #     queryset = UserProject.objects.filter(user_id=user.id)
+        #     return queryset
+        return UserProject.objects.all()
 
     def get_serializer_class(
         self,
@@ -141,7 +190,16 @@ class UserProjectViewSet(ModelViewSet):
             return UserProjectSerializer
         return UserProjectWriteSerializer
 
+    # def list(self, request, *args, **kwargs):
+    #     lst = UserProject.objects.filter(user_id=request.user.id)
+    #     return Response(
+    #         data=lst,
+    #         status=status.HTTP_200_OK,
+    #     )
+
 
 router.register(r"", UserViewSet, basename="users")
 router.register(r"skills", UserSkillViewSet, basename="user-skills")
-router.register(r"projects", UserProjectViewSet, basename="user-projects")
+
+user_project_router = DefaultRouter()
+user_project_router.register(r"", UserProjectViewSet, basename="user-projects")

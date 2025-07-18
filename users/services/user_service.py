@@ -4,7 +4,6 @@ from rest_framework.request import Request
 
 from users.models import User
 from users.repositories.user_repository import UserRepository
-from users.serializers import UserCreateSerializer
 
 
 class UserService:
@@ -13,16 +12,10 @@ class UserService:
 
     def create_user(
         self,
-        request: Request,
+        data: dict,
     ) -> User:
-        data = dict(request.data)
-        serializer = UserCreateSerializer(
-            data=data,
-        )
-        serializer.is_valid(raise_exception=True)
-
         new_user = self.user_repo.create_user(
-            data=serializer.validated_data,
+            data=data,
         )
         return new_user
 
@@ -34,6 +27,16 @@ class UserService:
             user_id=user_id,
         )
         return deleted_user
+
+    def update_user(
+        self,
+        request: Request,
+    ) -> User:
+        user_record = self.user_repo.update_user(
+            user_id=request.user.id,
+            name=request.data['name'],
+        )
+        return user_record
 
 
 user_service = UserService()

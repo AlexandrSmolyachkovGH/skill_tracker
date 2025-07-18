@@ -4,20 +4,22 @@ from rest_framework.serializers import (
     ModelSerializer,
 )
 
+from projects.serializers import ProjectSerializer
 from tasks.models import (
     Task,
     TaskAttachment,
     TaskStatus,
 )
+from users.serializers import ListUsersProjectSerializer, UserSerializer
 
 
 class TaskSerializer(ModelSerializer):
-    user_name = CharField(
+    owner_name = CharField(
         source="assigned_to.name",
         read_only=True,
     )
-    project_name = CharField(
-        source="project.name",
+    project_data = ProjectSerializer(
+        source="project",
         read_only=True,
     )
 
@@ -27,10 +29,12 @@ class TaskSerializer(ModelSerializer):
             "id",
             "title",
             "status",
-            "user_name",
             "assigned_to",
-            "project_name",
-            "project",
+            "owner_name",
+            "project_data",
+            "created_at",
+            "updated_at",
+            "deleted_at",
         ]
 
 
@@ -59,6 +63,9 @@ class TaskCreateSerializer(ModelSerializer):
             "assigned_to",
             "project_name",
             "project",
+            "created_at",
+            "updated_at",
+            "deleted_at",
         ]
         read_only_fields = [
             "id",
@@ -66,6 +73,9 @@ class TaskCreateSerializer(ModelSerializer):
             "assigned_to",
             "project_name",
             "project",
+            "created_at",
+            "updated_at",
+            "deleted_at",
         ]
 
 
@@ -96,6 +106,9 @@ class TaskPartialUpdateSerializer(ModelSerializer):
             "assigned_to",
             "project_name",
             "project",
+            "created_at",
+            "updated_at",
+            "deleted_at",
         ]
         read_only_fields = [
             "id",
@@ -103,14 +116,6 @@ class TaskPartialUpdateSerializer(ModelSerializer):
             "assigned_to",
             "project_name",
             "project",
-        ]
-
-
-class TaskWriteSerializer(ModelSerializer):
-    class Meta:
-        model = Task
-        exclude = [
-            "id",
             "created_at",
             "updated_at",
             "deleted_at",

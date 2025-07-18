@@ -1,4 +1,5 @@
 from django.db.models.query import QuerySet
+from django.utils import timezone
 from rest_framework.exceptions import NotFound
 
 from tasks.models import Task
@@ -43,6 +44,14 @@ class TaskRepository:
             setattr(updated_task, key, value)
         updated_task.save()
         return updated_task
+
+    def delete_task(
+        self,
+        task: Task,
+    ) -> Task:
+        task.deleted_at = timezone.now()
+        task.save()
+        return task
 
 
 task_repo = TaskRepository()

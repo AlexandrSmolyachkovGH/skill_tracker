@@ -1,4 +1,3 @@
-import datetime
 from uuid import UUID
 
 from django.utils import timezone
@@ -29,3 +28,15 @@ class UserRepository:
         deleted_user.save()
         deleted_user.refresh_from_db()
         return deleted_user
+
+    def update_user(
+        self,
+        user_id: UUID,
+        name: str,
+    ) -> User:
+        updated_user = User.objects.filter(id=user_id).first()
+        if not updated_user:
+            raise NotFound("User not found or already updated")
+        updated_user.name = name
+        updated_user.save()
+        return updated_user

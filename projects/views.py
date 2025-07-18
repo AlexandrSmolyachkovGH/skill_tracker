@@ -8,12 +8,14 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import (
     OrderingFilter,
     SearchFilter,
 )
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
+    BasePermission,
     IsAuthenticated,
 )
 from rest_framework.request import Request
@@ -28,7 +30,10 @@ from rest_framework_nested.routers import NestedSimpleRouter
 from projects.models import (
     Project,
 )
-from projects.permissions import AddToProjectPermission
+from projects.permissions import (
+    AddToProjectPermission,
+    ProjectIsNotDeletedPermission,
+)
 from projects.serializers import (
     AddToProjectSerializer,
     ProjectCreateSerializer,
@@ -70,6 +75,15 @@ class ProjectViewSet(ModelViewSet):
             user_id = self.request.user.id
             return Project.objects.filter(project_users__user_id=user_id).all()
         return Project.objects.all()
+
+    def get_permissions(self) -> list[BasePermission]:
+        if self.action in ["update", "partial_update"]:
+            return [
+                ProjectIsNotDeletedPermission(
+                    project_pk="pk",
+                )
+            ]
+        return super().get_permissions()
 
     def get_serializer_class(
         self,
@@ -148,6 +162,8 @@ class ProjectViewSet(ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         project = self.get_object()
+        if project.deleted_at:
+            raise ValidationError("Project has already been deleted")
         project_id = project.id
         user_id = request.data.get("user_id", None)
         role = request.data.get("role", UserProjectRole.OBSERVER)

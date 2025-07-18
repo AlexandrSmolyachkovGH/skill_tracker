@@ -18,19 +18,41 @@ class UserSerializer(ModelSerializer):
 
 
 class UserWriteSerializer(ModelSerializer):
+    name = CharField(
+        required=True,
+    )
+
     class Meta:
         model = User
         fields = [
             "id",
             "name",
             "email",
+            "created_at",
+            "updated_at",
+            "deleted_at",
+        ]
+        read_only_fields = [
+            "id",
+            "email",
+            "created_at",
+            "updated_at",
+            "deleted_at",
         ]
 
 
 class UserCreateSerializer(ModelSerializer):
     class Meta:
         model = User
-        exclude = [
+        fields = [
+            "id",
+            "name",
+            "email",
+            "created_at",
+            "updated_at",
+            "deleted_at",
+        ]
+        read_only_fields = [
             "created_at",
             "updated_at",
             "deleted_at",
@@ -97,3 +119,22 @@ class UserProjectWriteSerializer(ModelSerializer):
             "project_id",
             "role",
         ]
+
+
+class ListUsersProjectSerializer(ModelSerializer):
+    user_id = UUIDField(
+        source="user.id",
+        read_only=True,
+    )
+
+    class Meta:
+        model = UserProject
+        fields = [
+            "user_id",
+        ]
+
+
+class UserRoleSerializer(ModelSerializer):
+    class Meta:
+        model = UserProject
+        fields = ["user_id", "role"]
