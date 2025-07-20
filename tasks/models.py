@@ -65,6 +65,7 @@ class TaskAttachment(models.Model):
         on_delete=models.SET_NULL,
         null=True,
     )
+
     file_url = models.URLField(
         blank=True,
         null=True,
@@ -72,4 +73,5 @@ class TaskAttachment(models.Model):
     )
 
     def __str__(self) -> str:
-        return f"TaskID: {self.task}, url: {self.file_url}"
+        file = self.file_id if self.file_id else "No data"
+        return f"TaskID: {self.task}, FileID: {file}"

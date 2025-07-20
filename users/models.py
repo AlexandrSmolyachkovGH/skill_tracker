@@ -19,7 +19,7 @@ class User(TimeStampedModel):
     id = models.UUIDField(
         primary_key=True,
     )
-    name = models.CharField(
+    username = models.CharField(
         max_length=100,
         validators=[
             MinLengthValidator(3),
@@ -36,7 +36,7 @@ class User(TimeStampedModel):
         ]
 
     def __str__(self) -> str:
-        return f"User: {self.name}, email: {self.email}"
+        return f"User: {self.username}, email: {self.email}"
 
 
 class UserSkill(models.Model):
