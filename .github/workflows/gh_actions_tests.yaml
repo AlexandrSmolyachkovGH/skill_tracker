@@ -42,5 +42,7 @@ jobs:
           poetry install
 
       - name: Run Tests
-        run: |
-          poetry run pytest
+        run: poetry run coverage run -m pytest
+
+      - name: Report Coverage
+        run: poetry run coverage report --fail-under=80

@@ -30,6 +30,7 @@ from project.auth import (
     NoAuth,
     RemoteJWTAuthentication,
 )
+from projects.permissions import AddToProjectPermission
 from users.models import (
     User,
     UserProject,
@@ -179,12 +180,15 @@ class UserProjectViewSet(ModelViewSet):
 
     def get_queryset(self) -> QuerySet[User]:
         user = self.request.user
-        print("DEBUG: inside get_queryset")
         if user.role in ["USER"]:
-            print("DEBUG: IF get_queryset")
             queryset = UserProject.objects.filter(user_id=user.id)
             return queryset
         return UserProject.objects.all()
+
+    def get_permissions(
+        self,
+    ) -> list[BasePermission]:
+        return [IsAuthenticated(), AddToProjectPermission()]
 
     def get_serializer_class(
         self,
