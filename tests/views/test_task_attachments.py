@@ -32,8 +32,8 @@ def test_get_attachment_list(
     factory = APIRequestFactory()
 
     uri = (
-        f"/api/projects/{mock_project_orm.id}" +
-        f"/tasks/{mock_task.id}/attachments/",
+        f"/api/projects/{mock_project_orm.id}"
+        + f"/tasks/{mock_task.id}/attachments/",
     )
     request = factory.get(uri)
     request.user = mock_user_orm["auth_admin"]
@@ -64,8 +64,8 @@ def test_get_attachment(
     factory = APIRequestFactory()
 
     uri = (
-        f"/api/projects/{mock_project_orm.id}" +
-        f"/tasks/{mock_task.id}/attachments/{mock_attachment.id}/",
+        f"/api/projects/{mock_project_orm.id}"
+        + f"/tasks/{mock_task.id}/attachments/{mock_attachment.id}/",
     )
     request = factory.get(uri)
     request.user = mock_user_orm["auth_admin"]
@@ -95,8 +95,8 @@ def test_create_attachment(
     factory = APIRequestFactory()
 
     uri = (
-        f"/api/projects/{mock_project_orm.id}" +
-        f"/tasks/{mock_task.id}/attachments/",
+        f"/api/projects/{mock_project_orm.id}"
+        + f"/tasks/{mock_task.id}/attachments/",
     )
     data = {
         "task": str(mock_task.id),
@@ -135,8 +135,8 @@ def test_delete_attachment(
     factory = APIRequestFactory()
 
     uri = (
-        f"/api/projects/{mock_project_orm.id}" +
-        f"/tasks/{mock_task.id}/attachments/{mock_attachment.id}/",
+        f"/api/projects/{mock_project_orm.id}"
+        + f"/tasks/{mock_task.id}/attachments/{mock_attachment.id}/",
     )
     request = factory.delete(uri)
     request.user = mock_user_orm["auth_admin"]
@@ -169,8 +169,8 @@ def test_partial_update_attachment(
         "file_url": "new_example.url",
     }
     uri = (
-        f"/api/projects/{mock_project_orm.id}" +
-        f"/tasks/{mock_task.id}/attachments/{mock_attachment.id}/",
+        f"/api/projects/{mock_project_orm.id}"
+        + f"/tasks/{mock_task.id}/attachments/{mock_attachment.id}/",
     )
     request = factory.patch(
         path=uri,

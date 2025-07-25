@@ -54,13 +54,15 @@ def f_task(f_user, f_project) -> Task:
 
 @pytest.fixture
 def auth_admin() -> RemoteJWTUser:
-    mock_user = RemoteJWTUser({
-        "user_id": str(uuid4()),
-        "email": "test@example.com",
-        "role": "admin",
-        "is_active": True,
-        "is_verified": True
-    })
+    mock_user = RemoteJWTUser(
+        {
+            "user_id": str(uuid4()),
+            "email": "test@example.com",
+            "role": "admin",
+            "is_active": True,
+            "is_verified": True,
+        }
+    )
     return mock_user
 
 
@@ -143,8 +145,7 @@ def mock_attachment(
     mock_task: Task,
 ) -> TaskAttachment:
     new_attachment = TaskAttachment.objects.create(
-        task=mock_task,
-        file_url="test.url"
+        task=mock_task, file_url="test.url"
     )
     return new_attachment
 

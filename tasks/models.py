@@ -5,20 +5,18 @@ from django.core.validators import MinLengthValidator
 from django.db import models
 
 from common.models.base import (
-    TaskManager,
     TimeStampedModel,
 )
 
 
 class TaskStatus(models.TextChoices):
-    NEW = 'new', 'Новая'
-    IN_PROGRESS = 'in_progress', 'В работе'
-    COMPLETED = 'completed', 'Завершена'
-    CANCELED = 'canceled', 'Отменена'
+    NEW = "new", "Новая"
+    IN_PROGRESS = "in_progress", "В работе"
+    COMPLETED = "completed", "Завершена"
+    CANCELED = "canceled", "Отменена"
 
 
 class Task(TimeStampedModel):
-    objects: Type[TaskManager] = TaskManager()
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -35,19 +33,19 @@ class Task(TimeStampedModel):
         default=TaskStatus.NEW,
     )
     assigned_to = models.ForeignKey(
-        'users.User',
+        "users.User",
         on_delete=models.SET_NULL,
         null=True,
     )
     project = models.ForeignKey(
-        'projects.Project',
+        "projects.Project",
         on_delete=models.SET_NULL,
         null=True,
     )
 
     class Meta:
         ordering = [
-            'created_at',
+            "created_at",
         ]
 
     def __str__(self) -> str:
@@ -61,7 +59,7 @@ class TaskAttachment(models.Model):
         editable=False,
     )
     task = models.ForeignKey(
-        'tasks.Task',
+        "tasks.Task",
         on_delete=models.SET_NULL,
         null=True,
     )

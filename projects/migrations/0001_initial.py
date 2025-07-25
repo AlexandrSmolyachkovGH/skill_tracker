@@ -13,13 +13,13 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Project',
+            name="Project",
             fields=[
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
                 (
-                    'id',
+                    "id",
                     models.UUIDField(
                         default=uuid.uuid4,
                         editable=False,
@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    'name',
+                    "name",
                     models.CharField(
                         max_length=100,
                         validators=[
@@ -37,21 +37,21 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    'status',
+                    "status",
                     models.CharField(
                         choices=[
-                            ('draft', 'Черновик'),
-                            ('active', 'Активный'),
-                            ('paused', 'Приостановлен'),
-                            ('completed', 'Завершён'),
-                            ('canceled', 'Отменён'),
+                            ("draft", "Черновик"),
+                            ("active", "Активный"),
+                            ("paused", "Приостановлен"),
+                            ("completed", "Завершён"),
+                            ("canceled", "Отменён"),
                         ],
-                        default='draft',
+                        default="draft",
                     ),
                 ),
             ],
             options={
-                'ordering': ['created_at'],
+                "ordering": ["created_at"],
             },
         ),
     ]

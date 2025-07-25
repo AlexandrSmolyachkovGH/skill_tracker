@@ -1,47 +1,32 @@
 from uuid import UUID
 
-from rest_framework.exceptions import NotFound
-from rest_framework.request import Request
-
 from tasks.models import (
-    Task,
     TaskAttachment,
 )
 from tasks.repositories.task_attachment_repository import (
     task_attachment_repository,
 )
+from tasks.repositories.task_repository import task_repo
 
 
 class TaskAttachmentService:
     def __init__(self) -> None:
         self.repo = task_attachment_repository
-
-    def check_task_in_project(
-        self,
-        task_id: UUID,
-        project_id: UUID,
-    ) -> Task:
-        try:
-            task = Task.objects.get(id=task_id, project_id=project_id)
-        except Task.DoesNotExist as exc:
-            raise NotFound(
-                "Task not found or does not belong to this project"
-            ) from exc
-        return task
+        self.task_repo = task_repo
 
     def create(
         self,
         task_id: UUID,
         project_id: UUID,
-        request: Request,
+        valid_data: dict,
     ) -> TaskAttachment:
-        task = self.check_task_in_project(
+        task = self.task_repo.check_and_return_task_if_exists(
             task_id=task_id,
             project_id=project_id,
         )
         new_attachment = self.repo.create_task_attachment(
             task=task,
-            file_url=request.data["file_url"],
+            file_url=valid_data["file_url"],
         )
         return new_attachment
 
@@ -50,26 +35,21 @@ class TaskAttachmentService:
         attachment_id: UUID,
         task_id: UUID,
         project_id: UUID,
-        request: Request,
+        file_url: str,
     ) -> TaskAttachment:
-        self.check_task_in_project(
+        self.task_repo.check_and_return_task_if_exists(
             task_id=task_id,
             project_id=project_id,
         )
-        try:
-            attachment = TaskAttachment.objects.get(
-                id=attachment_id,
-                task_id=task_id,
-            )
-        except TaskAttachment.DoesNotExist as exc:
-            raise NotFound(
-                "Attachment not found or does not belong to this task"
-            ) from exc
-        attachment = self.repo.update_task_attachment(
-            attachment=attachment,
-            file_url=request.data["file_url"],
+        attachment = self.repo.get_attachment_if_exists(
+            task_id=task_id,
+            attachment_id=attachment_id,
         )
-        return attachment
+        updated_attachment = self.repo.update_task_attachment(
+            attachment=attachment,
+            file_url=file_url,
+        )
+        return updated_attachment
 
 
 task_attachment_service = TaskAttachmentService()

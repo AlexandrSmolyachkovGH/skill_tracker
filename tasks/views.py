@@ -16,6 +16,7 @@ from rest_framework.filters import (
     OrderingFilter,
     SearchFilter,
 )
+from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
@@ -25,10 +26,13 @@ from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import (
     ModelViewSet,
 )
+from rest_framework_nested.routers import NestedSimpleRouter
 
+from projects.models import Project
 from projects.permissions import (
     ProjectIsNotDeletedPermission,
 )
+from projects.views import project_nested_router
 from tasks.models import (
     TaskAttachment,
 )
@@ -45,13 +49,14 @@ from tasks.serializers import (
 )
 from tasks.services.task_attachment_service import task_attachment_service
 from tasks.services.task_service import task_service
+from users.models import User
 
 router = DefaultRouter()
 
 
 class TaskPagination(PageNumberPagination):
     page_size = 5
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
     max_page_size = 100
 
 
@@ -69,10 +74,10 @@ class TaskViewSet(ModelViewSet):
     ordering_fields = ["created_at", "title"]
 
     def get_permissions(self) -> list[BasePermission]:
-        if self.action == 'destroy':
-            return [OwnerOrAdminPermission()]
-        if self.action in ['partial_update']:
-            return [
+        if self.action == "destroy":
+            return super().get_permissions() + [OwnerOrAdminPermission()]
+        if self.action in ["partial_update"]:
+            return super().get_permissions() + [
                 TaskIsNotDeletedPermission(task_pk="pk"),
                 ProjectIsNotDeletedPermission(project_pk="projects_pk"),
             ]
@@ -137,9 +142,17 @@ class TaskViewSet(ModelViewSet):
             data=request.data,
         )
         serializer.is_valid(raise_exception=True)
+        project_id = kwargs["projects_pk"]
+        user = get_object_or_404(User, id=request.user.id)
+        project = get_object_or_404(Project, id=project_id)
+        create_data = {
+            "title": request.data["title"],
+            "status": request.data["status"],
+            "project": project,
+            "assigned_to": user,
+        }
         new_task = task_service.create_task(
-            request=request,
-            project_id=kwargs["projects_pk"],
+            create_data=create_data,
         )
         response_serializer = self.get_serializer(
             instance=new_task,
@@ -162,8 +175,13 @@ class TaskViewSet(ModelViewSet):
             data=request.data,
         )
         serializer.is_valid(raise_exception=True)
+        update_data = {
+            key: request.data[key]
+            for key in ["title", "status"]
+            if key in request.data
+        }
         updated_task = task_service.partial_update(
-            request=request,
+            update_data=update_data,
             project_id=kwargs["projects_pk"],
             task_id=kwargs["pk"],
         )
@@ -231,10 +249,12 @@ class TaskAttachmentViewSet(ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
 
     def get_permissions(self) -> list[BasePermission]:
-        if self.action == 'destroy':
-            return [OwnerOrAdminPermission()]
-        if self.action in ['partial_update']:
-            return [
+        if self.action == "destroy":
+            return super().get_permissions() + [
+                OwnerOrAdminPermission(),
+            ]
+        if self.action in ["partial_update"]:
+            return super().get_permissions() + [
                 TaskIsNotDeletedPermission(task_pk="tasks_pk"),
                 ProjectIsNotDeletedPermission(project_pk="projects_pk"),
             ]
@@ -267,10 +287,11 @@ class TaskAttachmentViewSet(ModelViewSet):
             data=request.data,
         )
         serializer.is_valid(raise_exception=True)
+        valid_data = serializer.validated_data
         new_attachment = task_attachment_service.create(
-            request=request,
-            project_id=kwargs["projects_pk"],
             task_id=kwargs["tasks_pk"],
+            project_id=kwargs["projects_pk"],
+            valid_data=valid_data,
         )
         response_serializer = self.get_serializer(
             instance=new_attachment,
@@ -290,8 +311,9 @@ class TaskAttachmentViewSet(ModelViewSet):
             data=request.data,
         )
         serializer.is_valid(raise_exception=True)
+        valid_data = serializer.validated_data
         attachment = task_attachment_service.update(
-            request=request,
+            file_url=valid_data["file_url"],
             attachment_id=kwargs["pk"],
             project_id=kwargs["projects_pk"],
             task_id=kwargs["tasks_pk"],
@@ -306,7 +328,23 @@ class TaskAttachmentViewSet(ModelViewSet):
 
 
 router.register(
-    r"all-tasks",
+    r"tasks/all-tasks",
     AllTasksViewSet,
     basename="all-tasks",
+)
+
+project_nested_router.register(
+    r"tasks",
+    TaskViewSet,
+    basename="tasks",
+)
+task_nested_router = NestedSimpleRouter(
+    parent_router=project_nested_router,
+    parent_prefix="tasks",
+    lookup="tasks",
+)
+task_nested_router.register(
+    r"attachments",
+    TaskAttachmentViewSet,
+    basename="attachments",
 )

@@ -21,11 +21,5 @@ class InternalSecretPermission(BasePermission):
             view, "action", None
         ) in ["create", "destroy"]:
             secret = request.headers.get("Service-Secret")
-            print("Service-Secret received:", secret)
             return secret == SERVICE_SECRET
         return True
-
-
-# class TaskProcessPermission(BasePermission):
-#     def has_object_permission(self, request, view, obj):
-#         request.user.has_permission()

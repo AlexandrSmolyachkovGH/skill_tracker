@@ -55,7 +55,7 @@ router = DefaultRouter()
 
 class UserPagination(PageNumberPagination):
     page_size = 10
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
     max_page_size = 100
 
 
@@ -90,8 +90,12 @@ class UserViewSet(ModelViewSet):
         self,
     ) -> list[BasePermission]:
         if self.action in ["create", "destroy"]:
-            return [InternalSecretPermission()]
-        return [IsAuthenticated()]
+            return super().get_permissions() + [
+                InternalSecretPermission(),
+            ]
+        return super().get_permissions() + [
+            IsAuthenticated(),
+        ]
 
     def get_serializer_class(
         self,
@@ -113,7 +117,7 @@ class UserViewSet(ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         user_record = user_service.create_user(
-            data=serializer.data,
+            data=serializer.validated_data,
         )
         response_serializer = self.get_serializer(
             instance=user_record,
@@ -151,7 +155,8 @@ class UserViewSet(ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         user_record = user_service.update_user(
-            request=request,
+            user_id=request.user.id,
+            name=serializer.validated_data['name'],
         )
         response_serializer = self.get_serializer(
             instance=user_record,
@@ -188,7 +193,10 @@ class UserProjectViewSet(ModelViewSet):
     def get_permissions(
         self,
     ) -> list[BasePermission]:
-        return [IsAuthenticated(), AddToProjectPermission()]
+        return super().get_permissions() + [
+            IsAuthenticated(),
+            AddToProjectPermission(),
+        ]
 
     def get_serializer_class(
         self,
@@ -213,7 +221,7 @@ class UserProjectViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         updated_record = user_project_service.update_user_project(
             user_project_id=user_project_id,
-            request=request,
+            role=serializer.validated_data["role"],
         )
         response_serializer = self.get_serializer(
             instance=updated_record,
@@ -224,8 +232,10 @@ class UserProjectViewSet(ModelViewSet):
         )
 
 
-router.register(r"", UserViewSet, basename="users")
+router.register(r"users", UserViewSet, basename="users")
 # router.register(r"skills", UserSkillViewSet, basename="user-skills")
 
 user_project_router = DefaultRouter()
-user_project_router.register(r"", UserProjectViewSet, basename="user-projects")
+user_project_router.register(
+    r"user-projects", UserProjectViewSet, basename="user-projects"
+)

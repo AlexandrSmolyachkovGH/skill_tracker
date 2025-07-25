@@ -24,7 +24,7 @@ class ProjectSerializer(ModelSerializer):
     )
     project_users_role = UserRoleSerializer(
         read_only=True,
-        source='project_users',
+        source="project_users",
         many=True,
     )
 
@@ -65,7 +65,7 @@ class ProjectWriteSerializer(ModelSerializer):
     )
     project_users_role = UserRoleSerializer(
         read_only=True,
-        source='project_users',
+        source="project_users",
         many=True,
     )
 
@@ -97,7 +97,7 @@ class ProjectCreateSerializer(ModelSerializer):
     )
     project_users_role = UserRoleSerializer(
         read_only=True,
-        source='project_users',
+        source="project_users",
         many=True,
     )
 
@@ -129,7 +129,7 @@ class AddToProjectSerializer(ModelSerializer):
     )
     user_id = PrimaryKeyRelatedField(
         queryset=User.objects.all(),
-        source='user',
+        source="user",
     )
     project = ProjectSerializer(
         read_only=True,

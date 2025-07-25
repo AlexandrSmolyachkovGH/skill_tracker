@@ -12,7 +12,6 @@ class UserRepository:
         data: dict,
     ) -> User:
         created_user = User.objects.create(**data)
-        created_user.refresh_from_db()
         return created_user
 
     def delete_user(
@@ -23,10 +22,11 @@ class UserRepository:
         if not deleted_user:
             raise NotFound("User not found or already deleted")
         deleted_user.deleted_at = timezone.now()
-        deleted_user.email = "deleted_" + deleted_user.email
-        deleted_user.name = "deleted_" + deleted_user.name
-        deleted_user.save()
-        deleted_user.refresh_from_db()
+        deleted_user.save(
+            update_fields=[
+                "deleted_at",
+            ],
+        )
         return deleted_user
 
     def update_user(
@@ -38,5 +38,12 @@ class UserRepository:
         if not updated_user:
             raise NotFound("User not found or already updated")
         updated_user.name = name
-        updated_user.save()
+        updated_user.save(
+            update_fields=[
+                "name",
+            ],
+        )
         return updated_user
+
+
+user_repository = UserRepository()

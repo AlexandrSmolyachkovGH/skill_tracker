@@ -6,19 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tasks', '0003_remove_taskattachment_file_url_and_more'),
+        ("tasks", "0003_remove_taskattachment_file_url_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='taskattachment',
-            name='file_id',
+            model_name="taskattachment",
+            name="file_id",
         ),
         migrations.AddField(
-            model_name='taskattachment',
-            name='file_url',
+            model_name="taskattachment",
+            name="file_url",
             field=models.URLField(
-                blank=True, help_text='Ссылка на внешний файл', null=True
+                blank=True, help_text="Ссылка на внешний файл", null=True
             ),
         ),
     ]

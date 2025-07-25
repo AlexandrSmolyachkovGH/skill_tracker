@@ -6,20 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tasks', '0001_initial'),
+        ("tasks", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='taskattachment',
-            name='file_url',
+            model_name="taskattachment",
+            name="file_url",
         ),
         migrations.AddField(
-            model_name='taskattachment',
-            name='file_id',
+            model_name="taskattachment",
+            name="file_id",
             field=models.UUIDField(
                 blank=True,
-                help_text='UUID файла в файловом сервисе',
+                help_text="UUID файла в файловом сервисе",
                 null=True,
             ),
         ),

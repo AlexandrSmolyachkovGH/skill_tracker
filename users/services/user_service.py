@@ -1,14 +1,12 @@
 from uuid import UUID
 
-from rest_framework.request import Request
-
 from users.models import User
-from users.repositories.user_repository import UserRepository
+from users.repositories.user_repository import user_repository
 
 
 class UserService:
     def __init__(self) -> None:
-        self.user_repo = UserRepository()
+        self.user_repo = user_repository
 
     def create_user(
         self,
@@ -30,11 +28,12 @@ class UserService:
 
     def update_user(
         self,
-        request: Request,
+        user_id: UUID,
+        name: str,
     ) -> User:
         user_record = self.user_repo.update_user(
-            user_id=request.user.id,
-            name=request.data['name'],
+            user_id=user_id,
+            name=name,
         )
         return user_record
 

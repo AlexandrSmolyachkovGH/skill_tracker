@@ -10,25 +10,25 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('projects', '0001_initial'),
-        ('skills', '0001_initial'),
+        ("projects", "0001_initial"),
+        ("skills", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='User',
+            name="User",
             fields=[
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
                 (
-                    'id',
+                    "id",
                     models.UUIDField(
                         editable=False, primary_key=True, serialize=False
                     ),
                 ),
                 (
-                    'name',
+                    "name",
                     models.CharField(
                         max_length=100,
                         unique=True,
@@ -37,71 +37,71 @@ class Migration(migrations.Migration):
                         ],
                     ),
                 ),
-                ('email', models.EmailField(max_length=254, unique=True)),
+                ("email", models.EmailField(max_length=254, unique=True)),
             ],
             options={
-                'ordering': ['created_at'],
+                "ordering": ["created_at"],
             },
         ),
         migrations.CreateModel(
-            name='UserProject',
+            name="UserProject",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.BigAutoField(
                         auto_created=True,
                         primary_key=True,
                         serialize=False,
-                        verbose_name='ID',
+                        verbose_name="ID",
                     ),
                 ),
                 (
-                    'role',
+                    "role",
                     models.CharField(
                         choices=[
-                            ('creator', 'Владелец'),
-                            ('participant', 'Участник'),
-                            ('mentor', 'Наставник'),
-                            ('observer', 'Наблюдатель'),
+                            ("creator", "Владелец"),
+                            ("participant", "Участник"),
+                            ("mentor", "Наставник"),
+                            ("observer", "Наблюдатель"),
                         ],
-                        default='creator',
+                        default="creator",
                     ),
                 ),
                 (
-                    'project',
+                    "project",
                     models.ForeignKey(
                         null=True,
                         on_delete=django.db.models.deletion.SET_NULL,
-                        to='projects.project',
+                        to="projects.project",
                     ),
                 ),
                 (
-                    'user',
+                    "user",
                     models.ForeignKey(
                         null=True,
                         on_delete=django.db.models.deletion.SET_NULL,
-                        to='users.user',
+                        to="users.user",
                     ),
                 ),
             ],
             options={
-                'unique_together': {('user', 'project')},
+                "unique_together": {("user", "project")},
             },
         ),
         migrations.CreateModel(
-            name='UserSkill',
+            name="UserSkill",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.BigAutoField(
                         auto_created=True,
                         primary_key=True,
                         serialize=False,
-                        verbose_name='ID',
+                        verbose_name="ID",
                     ),
                 ),
                 (
-                    'level',
+                    "level",
                     models.IntegerField(
                         default=1,
                         validators=[
@@ -111,7 +111,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    'xp',
+                    "xp",
                     models.IntegerField(
                         default=0,
                         validators=[
@@ -120,24 +120,24 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    'skill',
+                    "skill",
                     models.ForeignKey(
                         null=True,
                         on_delete=django.db.models.deletion.SET_NULL,
-                        to='skills.skill',
+                        to="skills.skill",
                     ),
                 ),
                 (
-                    'user',
+                    "user",
                     models.ForeignKey(
                         null=True,
                         on_delete=django.db.models.deletion.SET_NULL,
-                        to='users.user',
+                        to="users.user",
                     ),
                 ),
             ],
             options={
-                'unique_together': {('user', 'skill')},
+                "unique_together": {("user", "skill")},
             },
         ),
     ]

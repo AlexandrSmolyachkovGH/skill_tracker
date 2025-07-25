@@ -1,57 +1,100 @@
+from uuid import UUID
+
 from django.db.models.query import QuerySet
 from django.utils import timezone
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import (
+    NotFound,
+)
 
 from tasks.models import Task
 
 
 class TaskRepository:
+    def check_and_return_task_if_exists(
+        self,
+        task_id: UUID,
+        project_id: UUID,
+    ) -> Task:
+        try:
+            task = Task.objects.get(
+                id=task_id,
+                project_id=project_id,
+            )
+        except Task.DoesNotExist as exc:
+            raise NotFound(
+                "Task not found or does not belong to this project"
+            ) from exc
+        return task
+
+    def check_and_return_task_if_not_deleted(
+        self,
+        task: Task,
+    ) -> Task:
+        if task.deleted_at:
+            raise NotFound("The Task has already been deleted")
+        return task
+
     def get_task(
         self,
-        data: dict,
+        task_id: UUID,
+        project_id: UUID,
     ) -> Task:
-        task = Task.objects.filter(**data).first()
-        if not task:
-            raise NotFound("Task not found or already deleted")
+        task = self.check_and_return_task_if_exists(
+            task_id=task_id,
+            project_id=project_id,
+        )
         return task
 
     def get_tasks(
         self,
-        data: dict,
+        project_id: UUID,
     ) -> QuerySet[Task]:
-        return Task.objects.filter(**data).all()
+        return Task.objects.filter(project_id=project_id).all()
 
     def get_all_tasks(self) -> QuerySet[Task]:
         return Task.objects.all()
 
     def create_task(
         self,
-        data: dict,
+        create_data: dict,
     ) -> Task:
-        new_task = Task.objects.create(**data)
-        new_task.refresh_from_db()
+        new_task = Task.objects.create(**create_data)
         return new_task
 
     def partial_update_task(
         self,
-        task: Task,
-        # filter_data: dict,
+        task_id: UUID,
+        project_id: UUID,
         update_data: dict,
     ) -> Task:
-        # updated_task = Task.objects.filter(**filter_data).first()
-        # if not updated_task:
-        #     raise NotFound("Task not found or already deleted")
+        task = self.check_and_return_task_if_exists(
+            task_id=task_id,
+            project_id=project_id,
+        )
+        self.check_and_return_task_if_not_deleted(task=task)
         for key, value in update_data.items():
             setattr(task, key, value)
-        task.save()
+        task.save(
+            update_fields=list(update_data.keys()),
+        )
         return task
 
     def delete_task(
         self,
-        task: Task,
+        project_id: UUID,
+        task_id: UUID,
     ) -> Task:
+        task = self.check_and_return_task_if_exists(
+            task_id=task_id,
+            project_id=project_id,
+        )
+        self.check_and_return_task_if_not_deleted(task=task)
         task.deleted_at = timezone.now()
-        task.save()
+        task.save(
+            update_fields=[
+                "deleted_at",
+            ],
+        )
         return task
 
 

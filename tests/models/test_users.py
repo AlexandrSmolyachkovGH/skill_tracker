@@ -14,24 +14,20 @@ from users.models import (
 def test_create_user_model() -> None:
     user_model = User.objects.create(
         id=uuid.uuid4(),
-        name='TestName',
-        email='test@test.test',
+        name="TestName",
+        email="test@test.test",
     )
-    assert user_model.name == 'TestName'
-    assert user_model.email == 'test@test.test'
-    assert User.objects.filter(
-        id=user_model.id
-    ).exists()
+    assert user_model.name == "TestName"
+    assert user_model.email == "test@test.test"
+    assert User.objects.filter(id=user_model.id).exists()
     user_model.delete()
-    assert not User.objects.filter(
-        id=user_model.id
-    ).exists()
+    assert not User.objects.filter(id=user_model.id).exists()
 
 
 def test_user_str_repr() -> None:
     user_model = User(
-        name='TestName',
-        email='test@test.test',
+        name="TestName",
+        email="test@test.test",
     )
     assert str(user_model) == "User: TestName, email: test@test.test"
 
@@ -43,17 +39,23 @@ def test_create_user_project_model(f_user, f_project) -> None:
         project=f_project,
         role=UserProjectRole.CREATOR,
     )
-    assert user_project_model.role == 'creator'
-    assert user_project_model.get_role_display() == 'Владелец'
-    assert UserProject.objects.filter(
-        user=f_user,
-        project=f_project,
-    ).count() == 1
+    assert user_project_model.role == "creator"
+    assert user_project_model.get_role_display() == "Владелец"
+    assert (
+        UserProject.objects.filter(
+            user=f_user,
+            project=f_project,
+        ).count()
+        == 1
+    )
     user_project_model.delete()
-    assert UserProject.objects.filter(
-        user=f_user,
-        project=f_project,
-    ).count() == 0
+    assert (
+        UserProject.objects.filter(
+            user=f_user,
+            project=f_project,
+        ).count()
+        == 0
+    )
 
 
 @pytest.mark.django_db
@@ -63,7 +65,10 @@ def test_user_project_str_repr(f_user, f_project) -> None:
         project=f_project,
         role=UserProjectRole.CREATOR,
     )
-    assert str(user_project_model) == f"user: {f_user}, project: {f_project}, role: creator"
+    assert (
+        str(user_project_model)
+        == f"user: {f_user}, project: {f_project}, role: creator"
+    )
 
 
 @pytest.mark.django_db

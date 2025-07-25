@@ -1,96 +1,54 @@
 from uuid import UUID
 
 from django.db.models.query import QuerySet
-from rest_framework.exceptions import (
-    NotFound,
-    ValidationError,
-)
-from rest_framework.generics import get_object_or_404
-from rest_framework.request import Request
 
-from projects.models import Project
 from tasks.models import Task
 from tasks.repositories.task_repository import task_repo
-from users.models import User
 
 
 class TaskService:
     def __init__(self) -> None:
         self.repo = task_repo
 
-    def check_task_in_project(
-        self,
-        task_id: UUID,
-        project_id: UUID,
-    ) -> Task:
-        try:
-            task = Task.objects.get(id=task_id, project_id=project_id)
-        except Task.DoesNotExist as exc:
-            raise NotFound(
-                "Task not found or does not belong to this project"
-            ) from exc
-        return task
-
     def get_task(
         self,
         task_id: UUID,
         project_id: UUID,
     ) -> Task:
-        if not isinstance(task_id, UUID):
-            raise ValidationError("Invalid type task_id")
-        if not isinstance(project_id, UUID):
-            raise ValidationError("Invalid type project_id")
-        data = {
-            "id": task_id,
-            "project_id": project_id,
-        }
-        return self.repo.get_task(data=data)
+        return self.repo.get_task(
+            task_id=task_id,
+            project_id=project_id,
+        )
 
     def get_tasks(
         self,
         project_id: UUID,
     ) -> QuerySet[Task]:
-        print(f"project_id: {project_id}, type: {type(project_id)}")
-        if not isinstance(project_id, UUID):
-            raise ValidationError("Invalid type project_id")
-        data = {
-            "project_id": project_id,
-        }
-        return self.repo.get_tasks(data=data)
+        return self.repo.get_tasks(
+            project_id=project_id,
+        )
 
     def get_all_tasks(self) -> QuerySet[Task]:
         return self.repo.get_all_tasks()
 
     def create_task(
         self,
-        request: Request,
-        project_id: UUID,
+        create_data: dict,
     ) -> Task:
-        user = get_object_or_404(User, id=request.user.id)
-        project = get_object_or_404(Project, id=project_id)
-        create_data = {
-            "title": request.data["title"],
-            "status": request.data["status"],
-            "project": project,
-            "assigned_to": user,
-        }
-        new_task = self.repo.create_task(data=create_data)
+        new_task = self.repo.create_task(
+            create_data=create_data,
+        )
         return new_task
 
     def partial_update(
         self,
-        request: Request,
+        update_data: dict,
         project_id: UUID,
         task_id: UUID,
     ) -> Task:
-        task = self.check_task_in_project(task_id, project_id)
-        update_data = {
-            key: request.data[key]
-            for key in ["title", "status"]
-            if key in request.data
-        }
         updated_task = self.repo.partial_update_task(
-            task=task,
+            project_id=project_id,
+            task_id=task_id,
             update_data=update_data,
         )
         return updated_task
@@ -100,10 +58,9 @@ class TaskService:
         project_id: UUID,
         task_id: UUID,
     ) -> Task:
-        task = self.check_task_in_project(task_id, project_id)
-
         deleted_task = self.repo.delete_task(
-            task=task,
+            project_id=project_id,
+            task_id=task_id,
         )
         return deleted_task
 

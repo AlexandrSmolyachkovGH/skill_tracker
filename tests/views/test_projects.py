@@ -83,7 +83,6 @@ def test_create_project(
 
     view = ProjectViewSet.as_view({"post": "create"})
     response = view(request)
-
     assert response.status_code == status.HTTP_201_CREATED
     assert response.data["name"] == data["name"]
     assert response.data["status"] == ProjectStatus.ACTIVE

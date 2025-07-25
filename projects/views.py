@@ -8,7 +8,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 from rest_framework.filters import (
     OrderingFilter,
     SearchFilter,
@@ -41,10 +40,6 @@ from projects.serializers import (
     ProjectWriteSerializer,
 )
 from projects.services.project_service import project_service
-from tasks.views import (
-    TaskAttachmentViewSet,
-    TaskViewSet,
-)
 from users.models import UserProjectRole
 
 router = DefaultRouter()
@@ -52,7 +47,7 @@ router = DefaultRouter()
 
 class ProjectPagination(PageNumberPagination):
     page_size = 3
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
     max_page_size = 100
 
 
@@ -78,10 +73,8 @@ class ProjectViewSet(ModelViewSet):
 
     def get_permissions(self) -> list[BasePermission]:
         if self.action in ["update", "partial_update"]:
-            return [
-                ProjectIsNotDeletedPermission(
-                    project_pk="pk",
-                )
+            return super().get_permissions() + [
+                ProjectIsNotDeletedPermission(project_pk="pk"),
             ]
         return super().get_permissions()
 
@@ -106,9 +99,13 @@ class ProjectViewSet(ModelViewSet):
             data=request.data,
         )
         serializer.is_valid(raise_exception=True)
+        owner_data = {
+            "owner_id": request.user.id,
+        }
+        valid_data = serializer.validated_data
+        valid_data.update(owner_data)
         new_project = project_service.create_project(
-            valid_data=serializer.validated_data,
-            request=request,
+            valid_data=valid_data,
         )
         response_serializer = self.get_serializer(
             instance=new_project,
@@ -161,10 +158,7 @@ class ProjectViewSet(ModelViewSet):
             data=request.data,
         )
         serializer.is_valid(raise_exception=True)
-        project = self.get_object()
-        if project.deleted_at:
-            raise ValidationError("Project has already been deleted")
-        project_id = project.id
+        project_id = kwargs.get("pk")
         user_id = request.data.get("user_id", None)
         role = request.data.get("role", UserProjectRole.OBSERVER)
 
@@ -185,29 +179,13 @@ class ProjectViewSet(ModelViewSet):
 
 
 router.register(
-    r"",
+    r"projects",
     ProjectViewSet,
     basename="projects",
 )
 
-project_router = NestedSimpleRouter(
+project_nested_router = NestedSimpleRouter(
     parent_router=router,
-    parent_prefix="",
+    parent_prefix="projects",
     lookup="projects",
-)
-project_router.register(
-    r"tasks",
-    TaskViewSet,
-    basename="tasks",
-)
-
-task_router = NestedSimpleRouter(
-    parent_router=project_router,
-    parent_prefix="tasks",
-    lookup="tasks",
-)
-task_router.register(
-    r"attachments",
-    TaskAttachmentViewSet,
-    basename="attachments",
 )

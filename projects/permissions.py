@@ -18,6 +18,12 @@ class AddToProjectPermission(BasePermission):
     Permission to add new users to a specific project
     """
 
+    allowed_roles = [
+        UserProjectRole.CREATOR,
+        UserProjectRole.MENTOR,
+        UserProjectRole.PARTICIPANT,
+    ]
+
     def has_permission(
         self,
         request: Request,
@@ -34,19 +40,18 @@ class AddToProjectPermission(BasePermission):
         except UserProject.DoesNotExist:
             return False
 
-        allowed_roles = [
-            UserProjectRole.CREATOR,
-            UserProjectRole.MENTOR,
-            UserProjectRole.PARTICIPANT,
-        ]
-
-        return user_project.role in allowed_roles
+        return user_project.role in self.allowed_roles
 
 
 class ProjectIsNotDeletedPermission(BasePermission):
     """
     Permission to receive only not deleted projects
     """
+
+    admin_roles = [
+        "ADMIN",
+        "STAFFER",
+    ]
 
     def __init__(
         self,
@@ -65,7 +70,15 @@ class ProjectIsNotDeletedPermission(BasePermission):
         project_id = view.kwargs.get(self.project_pk)
         user_role = request.user.role
         if user_role == "USER":
-            project = Project.objects.get(id=project_id)
+            try:
+                project = Project.objects.get(id=project_id)
+            except Project.DoesNotExist:
+                return False
+
             if project.deleted_at:
                 return False
+
+        if user_role in self.admin_roles:
+            return True
+
         return True

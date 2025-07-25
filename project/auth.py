@@ -9,6 +9,7 @@ from rest_framework.request import Request
 
 from project.settings import (
     AUTH_URI,
+    CACHE_TOKEN_LENGTH,
 )
 
 
@@ -47,14 +48,11 @@ class RemoteJWTUser(AnonymousUser):
 class RemoteJWTAuthentication(BaseAuthentication):
     auth_uri = f"{AUTH_URI}/tokens/access/verify/"
 
-    def verify_token(
-        self,
-        token: str
-    ) -> dict[str, Any]:
+    def verify_token(self, token: str) -> dict[str, Any]:
         """
         Extracts the token and verifies it on the Auth service side
         """
-        cached = cache.get(f"token:{token[:200]}")
+        cached = cache.get(f"token:{token[:CACHE_TOKEN_LENGTH]}")
         if cached:
             return cached
         response = requests.get(
@@ -78,8 +76,7 @@ class RemoteJWTAuthentication(BaseAuthentication):
         """
         Custom User authorization
         """
-        print("Authorization header:", request.headers.get("Authorization"))
-        auth_header = request.headers.get('Authorization')
+        auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
             return None
         token = auth_header.split(" ")[1]
@@ -102,4 +99,7 @@ class NoAuth(BaseAuthentication):
         self,
         request: Request,
     ) -> None:
+        """
+        Auth only for requests to create and delete users via AUTH-service
+        """
         return None

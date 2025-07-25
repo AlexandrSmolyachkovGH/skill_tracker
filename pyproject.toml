@@ -23,7 +23,8 @@ dependencies = [
     "requests (>=2.32.4,<3.0.0)",
     "drf-nested-routers (>=0.94.2,<0.95.0)",
     "coverage (>=7.9.2,<8.0.0)",
-    "pytest-mock (>=3.14.1,<4.0.0)"
+    "pytest-mock (>=3.14.1,<4.0.0)",
+    "ruff (>=0.12.4,<0.13.0)"
 ]
 
 [tool.poetry]
@@ -82,3 +83,9 @@ disallow_untyped_defs = true
 check_untyped_defs = true
 warn_unused_ignores = true
 exclude = '(.*/migrations/.*$|.*/settings.*$)'
+
+[tool.ruff]
+select = ["Q"]
+
+[tool.ruff.format]
+quote-style = "double"

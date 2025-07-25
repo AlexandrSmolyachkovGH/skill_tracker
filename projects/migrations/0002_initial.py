@@ -9,18 +9,18 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('projects', '0001_initial'),
-        ('users', '0001_initial'),
+        ("projects", "0001_initial"),
+        ("users", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='project',
-            name='owner',
+            model_name="project",
+            name="owner",
             field=models.ForeignKey(
                 null=True,
                 on_delete=django.db.models.deletion.SET_NULL,
-                to='users.user',
+                to="users.user",
             ),
         ),
     ]

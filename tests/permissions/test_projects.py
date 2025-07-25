@@ -22,7 +22,9 @@ from users.models import User, UserProject, UserProjectRole
 from users.views import UserProjectViewSet
 
 
-def create_project_with_observer_and_owner() -> tuple[User, User, Project, User]:
+def create_project_with_observer_and_owner() -> (
+    tuple[User, User, Project, User]
+):
     """
     Create entities for testing the AddToProjectPermission
     """
@@ -51,10 +53,15 @@ def create_project_with_observer_and_owner() -> tuple[User, User, Project, User]
         role=UserProjectRole.OBSERVER,
     )
 
-    return owner, observer, project, User.objects.create(
-        id=uuid4(),
-        name="some_user",
-        email="some_user@email.com",
+    return (
+        owner,
+        observer,
+        project,
+        User.objects.create(
+            id=uuid4(),
+            name="some_user",
+            email="some_user@email.com",
+        ),
     )
 
 
@@ -66,7 +73,9 @@ def test_add_to_project_permission(
     Test the AddToProjectPermission
     """
     factory = APIRequestFactory()
-    _, observer, project, target_user = create_project_with_observer_and_owner()
+    _, observer, project, target_user = (
+        create_project_with_observer_and_owner()
+    )
 
     data = {
         "user_id": target_user.id,
@@ -86,4 +95,7 @@ def test_add_to_project_permission(
     response = view(request)
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.data["detail"] == "You do not have permission to perform this action."
+    assert (
+        response.data["detail"]
+        == "You do not have permission to perform this action."
+    )

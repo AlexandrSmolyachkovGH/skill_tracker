@@ -8,7 +8,7 @@ from skills.models import (
 class SkillSerializer(ModelSerializer):
     class Meta:
         model = Skill
-        fields = '__all__'
+        fields = "__all__"
 
 
 class SkillWriteSerializer(ModelSerializer):

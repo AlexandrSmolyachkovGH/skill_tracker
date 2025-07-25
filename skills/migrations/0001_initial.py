@@ -13,13 +13,13 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Skill',
+            name="Skill",
             fields=[
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
                 (
-                    'id',
+                    "id",
                     models.UUIDField(
                         default=uuid.uuid4,
                         editable=False,
@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    'name',
+                    "name",
                     models.CharField(
                         max_length=100,
                         validators=[
@@ -37,23 +37,23 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    'category',
+                    "category",
                     models.CharField(
                         choices=[
-                            ('unspecified', 'Неопределенный'),
-                            ('programming', 'Программирование'),
-                            ('design', 'Дизайн'),
-                            ('marketing', 'Маркетинг'),
-                            ('management', 'Менеджмент'),
-                            ('writing', 'Копирайтинг'),
-                            ('other', 'Другое'),
+                            ("unspecified", "Неопределенный"),
+                            ("programming", "Программирование"),
+                            ("design", "Дизайн"),
+                            ("marketing", "Маркетинг"),
+                            ("management", "Менеджмент"),
+                            ("writing", "Копирайтинг"),
+                            ("other", "Другое"),
                         ],
-                        default='unspecified',
+                        default="unspecified",
                     ),
                 ),
             ],
             options={
-                'ordering': ['created_at'],
+                "ordering": ["created_at"],
             },
         ),
     ]
