@@ -167,18 +167,6 @@ class UserViewSet(ModelViewSet):
         )
 
 
-# @extend_schema(tags=["Users-Skills"])
-# class UserSkillViewSet(ModelViewSet):
-#     queryset = UserSkill.objects.all()
-#
-#     def get_serializer_class(
-#         self,
-#     ) -> Type[BaseSerializer]:
-#         if self.action in ["list", "retrieve"]:
-#             return UserSkillSerializer
-#         return UserSkillWriteSerializer
-
-
 @extend_schema(tags=["Users-Projects"])
 class UserProjectViewSet(ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
@@ -233,8 +221,6 @@ class UserProjectViewSet(ModelViewSet):
 
 
 router.register(r"users", UserViewSet, basename="users")
-# router.register(r"skills", UserSkillViewSet, basename="user-skills")
-
 user_project_router = DefaultRouter()
 user_project_router.register(
     r"user-projects", UserProjectViewSet, basename="user-projects"
