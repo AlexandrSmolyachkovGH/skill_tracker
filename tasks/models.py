@@ -1,16 +1,19 @@
 import uuid
+from typing import Type
 
 from django.core.validators import MinLengthValidator
 from django.db import models
 
-from common.models.base import TimeStampedModel
+from common.models.base import (
+    TimeStampedModel,
+)
 
 
 class TaskStatus(models.TextChoices):
-    NEW = 'new', 'Новая'
-    IN_PROGRESS = 'in_progress', 'В работе'
-    COMPLETED = 'completed', 'Завершена'
-    CANCELED = 'canceled', 'Отменена'
+    NEW = "new", "Новая"
+    IN_PROGRESS = "in_progress", "В работе"
+    COMPLETED = "completed", "Завершена"
+    CANCELED = "canceled", "Отменена"
 
 
 class Task(TimeStampedModel):
@@ -30,19 +33,19 @@ class Task(TimeStampedModel):
         default=TaskStatus.NEW,
     )
     assigned_to = models.ForeignKey(
-        'users.User',
+        "users.User",
         on_delete=models.SET_NULL,
         null=True,
     )
     project = models.ForeignKey(
-        'projects.Project',
+        "projects.Project",
         on_delete=models.SET_NULL,
         null=True,
     )
 
     class Meta:
         ordering = [
-            'created_at',
+            "created_at",
         ]
 
     def __str__(self) -> str:
@@ -56,16 +59,15 @@ class TaskAttachment(models.Model):
         editable=False,
     )
     task = models.ForeignKey(
-        'tasks.Task',
+        "tasks.Task",
         on_delete=models.SET_NULL,
         null=True,
     )
-    file_id = models.UUIDField(
+    file_url = models.URLField(
         blank=True,
         null=True,
-        help_text="UUID файла в файловом сервисе",
+        help_text="Ссылка на внешний файл",
     )
 
     def __str__(self) -> str:
-        file = self.file_id if self.file_id else "No data"
-        return f"TaskID: {self.task}, FileID: {file}"
+        return f"TaskID: {self.task}, url: {self.file_url}"

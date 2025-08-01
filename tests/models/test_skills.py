@@ -9,25 +9,25 @@ from skills.models import (
 @pytest.mark.django_db
 def test_skill_model() -> None:
     skill_model = Skill.objects.create(
-        name='TestSkill',
+        name="TestSkill",
         category=SkillCategory.PROGRAMMING,
     )
     assert Skill.objects.filter(
-        name='TestSkill',
+        name="TestSkill",
         category=SkillCategory.PROGRAMMING,
     ).exists()
-    assert skill_model.name == 'TestSkill'
-    assert skill_model.category == 'programming'
-    assert skill_model.get_category_display() == 'Программирование'
+    assert skill_model.name == "TestSkill"
+    assert skill_model.category == "programming"
+    assert skill_model.get_category_display() == "Программирование"
     skill_model.delete()
     assert not Skill.objects.filter(
-        name='TestSkill',
+        name="TestSkill",
         category=SkillCategory.PROGRAMMING,
     ).exists()
 
 
 def test_skill_model_str_repr() -> None:
     sm = Skill(
-        name='TestSkill',
+        name="TestSkill",
     )
     assert str(sm) == "Skill: TestSkill, category: unspecified"

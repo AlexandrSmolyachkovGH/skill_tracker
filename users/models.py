@@ -1,5 +1,3 @@
-import uuid
-
 from django.core.validators import (
     MaxValueValidator,
     MinLengthValidator,
@@ -11,19 +9,17 @@ from common.models.base import TimeStampedModel
 
 
 class UserProjectRole(models.TextChoices):
-    CREATOR = 'creator', 'Владелец'
-    PARTICIPANT = 'participant', 'Участник'
-    MENTOR = 'mentor', 'Наставник'
-    OBSERVER = 'observer', 'Наблюдатель'
+    CREATOR = "creator", "Владелец"
+    PARTICIPANT = "participant", "Участник"
+    MENTOR = "mentor", "Наставник"
+    OBSERVER = "observer", "Наблюдатель"
 
 
 class User(TimeStampedModel):
     id = models.UUIDField(
         primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
     )
-    username = models.CharField(
+    name = models.CharField(
         max_length=100,
         validators=[
             MinLengthValidator(3),
@@ -36,21 +32,21 @@ class User(TimeStampedModel):
 
     class Meta:
         ordering = [
-            'created_at',
+            "created_at",
         ]
 
     def __str__(self) -> str:
-        return f"User: {self.username}, email: {self.email}"
+        return f"User: {self.name}, email: {self.email}"
 
 
 class UserSkill(models.Model):
     user = models.ForeignKey(
-        'users.User',
+        "users.User",
         on_delete=models.SET_NULL,
         null=True,
     )
     skill = models.ForeignKey(
-        'skills.Skill',
+        "skills.Skill",
         on_delete=models.SET_NULL,
         null=True,
     )
@@ -69,7 +65,7 @@ class UserSkill(models.Model):
     )
 
     class Meta:
-        unique_together = ('user', 'skill')
+        unique_together = ("user", "skill")
 
     def __str__(self) -> str:
         return (
@@ -80,14 +76,15 @@ class UserSkill(models.Model):
 
 class UserProject(models.Model):
     user = models.ForeignKey(
-        'users.User',
+        "users.User",
         on_delete=models.SET_NULL,
         null=True,
     )
     project = models.ForeignKey(
-        'projects.Project',
+        "projects.Project",
         on_delete=models.SET_NULL,
         null=True,
+        related_name="project_users",
     )
     role = models.CharField(
         choices=UserProjectRole.choices,
@@ -95,7 +92,7 @@ class UserProject(models.Model):
     )
 
     class Meta:
-        unique_together = ('user', 'project')
+        unique_together = ("user", "project")
 
     def __str__(self) -> str:
         return f"user: {self.user}, project: {self.project}, role: {self.role}"
