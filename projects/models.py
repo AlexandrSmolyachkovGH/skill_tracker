@@ -7,11 +7,11 @@ from common.models.base import TimeStampedModel
 
 
 class ProjectStatus(models.TextChoices):
-    DRAFT = 'draft', 'Черновик'
-    ACTIVE = 'active', 'Активный'
-    PAUSED = 'paused', 'Приостановлен'
-    COMPLETED = 'completed', 'Завершён'
-    CANCELED = 'canceled', 'Отменён'
+    DRAFT = "draft", "Черновик"
+    ACTIVE = "active", "Активный"
+    PAUSED = "paused", "Приостановлен"
+    COMPLETED = "completed", "Завершён"
+    CANCELED = "canceled", "Отменён"
 
 
 class Project(TimeStampedModel):
@@ -31,14 +31,14 @@ class Project(TimeStampedModel):
         default=ProjectStatus.DRAFT,
     )
     owner = models.ForeignKey(
-        'users.User',
+        "users.User",
         on_delete=models.SET_NULL,
         null=True,
     )
 
     class Meta:
         ordering = [
-            'created_at',
+            "created_at",
         ]
 
     def __str__(self) -> str:

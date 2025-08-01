@@ -1,3 +1,5 @@
+from typing import Type
+
 from django.db import models
 
 
