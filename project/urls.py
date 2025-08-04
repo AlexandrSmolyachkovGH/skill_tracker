@@ -10,8 +10,7 @@ from rest_framework.permissions import AllowAny
 from project.views import api_root
 from projects.views import project_nested_router
 from projects.views import router as project_router
-
-# from skills.views import router as skill_router
+from skills.views import user_nested_router
 from tasks.views import router as task_router
 from tasks.views import task_nested_router
 from users.views import router as user_router
@@ -54,5 +53,5 @@ urlpatterns = [
     path("api/", include(project_nested_router.urls)),
     path("api/", include(task_router.urls)),
     path("api/", include(task_nested_router.urls)),
-    # path("api/skills/", include(skill_router.urls)),
+    path("api/", include(user_nested_router.urls)),
 ]
