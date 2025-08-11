@@ -12,7 +12,7 @@ from project.auth import (
 from projects.models import Project
 from skills.models import Skill
 from tasks.models import Task, TaskAttachment, TaskStatus
-from users.models import User, UserProject
+from users.models import User, UserProject, UserSkill
 
 
 @pytest.fixture
@@ -159,3 +159,21 @@ def allow_user_project_permission(
         return_value=[AllowAny()],
     )
     return mock_permissions
+
+
+@pytest.fixture
+def skill_and_user_skill_mock(
+    mock_user_orm: dict,
+) -> dict:
+    user_orm = mock_user_orm["user_orm"]
+    skill = Skill.objects.create(
+        name="test_skill",
+    )
+    user_skill = UserSkill.objects.create(
+        skill_id=skill.id,
+        user_id=user_orm.id,
+    )
+    return {
+        "skill": skill,
+        "user_skill": user_skill,
+    }

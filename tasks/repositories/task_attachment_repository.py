@@ -11,6 +11,22 @@ from tasks.models import (
 
 
 class TaskAttachmentRepository:
+    def __init__(self) -> None:
+        self.pending_url: str = "waiting for loading"
+
+    def get_attachment_by_id(
+        self,
+        attachment_id: UUID,
+    ) -> TaskAttachment:
+        try:
+            attachment = TaskAttachment.objects.get(
+                id=attachment_id,
+            )
+        except TaskAttachment.DoesNotExist as exc:
+            raise NotFound("Attachment not found") from exc
+
+        return attachment
+
     def get_attachment_if_exists(
         self,
         task_id: UUID,
@@ -31,10 +47,9 @@ class TaskAttachmentRepository:
     def create_task_attachment(
         self,
         task: Task,
-        file_url: str,
     ) -> TaskAttachment:
         attachment = TaskAttachment.objects.create(
-            file_url=file_url,
+            file_url=self.pending_url,
             task=task,
         )
         return attachment

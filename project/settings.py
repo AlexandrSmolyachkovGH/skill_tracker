@@ -8,6 +8,8 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 SERVICE_SECRET = os.getenv("SERVICE_SECRET")
 AUTH_URI = os.getenv("AUTH_URI")
 DEBUG = True
+KAFKA_ENTRY_POINT = os.getenv("ENTRY_POINT")
+KAFKA_FILE_TOPIC = os.getenv("FILE_TOPIC")
 
 ALLOWED_HOSTS: list = []
 

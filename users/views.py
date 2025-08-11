@@ -83,6 +83,7 @@ class UserViewSet(ModelViewSet):
         self,
     ) -> list[BaseAuthentication]:
         if getattr(self, "action", None) in ["create", "destroy"]:
+            # if self.request.method in ["POST", "DELETE"]:
             return [NoAuth()]
         return [RemoteJWTAuthentication()]
 
@@ -90,7 +91,7 @@ class UserViewSet(ModelViewSet):
         self,
     ) -> list[BasePermission]:
         if self.action in ["create", "destroy"]:
-            return super().get_permissions() + [
+            return [
                 InternalSecretPermission(),
             ]
         return super().get_permissions() + [
@@ -156,7 +157,7 @@ class UserViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         user_record = user_service.update_user(
             user_id=request.user.id,
-            name=serializer.validated_data['name'],
+            name=serializer.validated_data["name"],
         )
         response_serializer = self.get_serializer(
             instance=user_record,
@@ -165,6 +166,18 @@ class UserViewSet(ModelViewSet):
             data=response_serializer.data,
             status=status.HTTP_200_OK,
         )
+
+
+@extend_schema(tags=["Users-Skills"])
+class UserSkillViewSet(ModelViewSet):
+    queryset = UserSkill.objects.all()
+
+    def get_serializer_class(
+        self,
+    ) -> Type[BaseSerializer]:
+        if self.action in ["list", "retrieve"]:
+            return UserSkillSerializer
+        return UserSkillWriteSerializer
 
 
 @extend_schema(tags=["Users-Projects"])
