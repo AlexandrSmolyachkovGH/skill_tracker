@@ -159,3 +159,27 @@ class TaskAttachmentWriteSerializer(ModelSerializer):
             "task",
             "task_name",
         ]
+
+
+class TaskAttachmentCreateSerializer(ModelSerializer):
+    task_name = CharField(
+        source="task.title",
+        read_only=True,
+    )
+    file_url = CharField(
+        default="waiting for loading",
+    )
+
+    class Meta:
+        model = TaskAttachment
+        fields = [
+            "id",
+            "task",
+            "task_name",
+            "file_url",
+        ]
+        read_only_fields = [
+            "id",
+            "task",
+            "task_name",
+        ]

@@ -18,7 +18,6 @@ class TaskAttachmentService:
         self,
         task_id: UUID,
         project_id: UUID,
-        valid_data: dict,
     ) -> TaskAttachment:
         task = self.task_repo.check_and_return_task_if_exists(
             task_id=task_id,
@@ -26,7 +25,6 @@ class TaskAttachmentService:
         )
         new_attachment = self.repo.create_task_attachment(
             task=task,
-            file_url=valid_data["file_url"],
         )
         return new_attachment
 

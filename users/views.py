@@ -82,8 +82,8 @@ class UserViewSet(ModelViewSet):
     def get_authenticators(
         self,
     ) -> list[BaseAuthentication]:
-        # if getattr(self, "action", None) in ["create", "destroy"]:
-        if self.request.method in ["POST", "DELETE"]:
+        if getattr(self, "action", None) in ["create", "destroy"]:
+            # if self.request.method in ["POST", "DELETE"]:
             return [NoAuth()]
         return [RemoteJWTAuthentication()]
 

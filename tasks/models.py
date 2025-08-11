@@ -1,5 +1,4 @@
 import uuid
-from typing import Type
 
 from django.core.validators import MinLengthValidator
 from django.db import models

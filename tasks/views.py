@@ -41,6 +41,7 @@ from tasks.permissions import (
     TaskIsNotDeletedPermission,
 )
 from tasks.serializers import (
+    TaskAttachmentCreateSerializer,
     TaskAttachmentSerializer,
     TaskAttachmentWriteSerializer,
     TaskCreateSerializer,
@@ -275,6 +276,8 @@ class TaskAttachmentViewSet(ModelViewSet):
     ) -> Type[BaseSerializer]:
         if self.action in ["list", "retrieve", "destroy"]:
             return TaskAttachmentSerializer
+        if self.action in ["create"]:
+            return TaskAttachmentCreateSerializer
         return TaskAttachmentWriteSerializer
 
     def create(
@@ -287,11 +290,9 @@ class TaskAttachmentViewSet(ModelViewSet):
             data=request.data,
         )
         serializer.is_valid(raise_exception=True)
-        valid_data = serializer.validated_data
         new_attachment = task_attachment_service.create(
             task_id=kwargs["tasks_pk"],
             project_id=kwargs["projects_pk"],
-            valid_data=valid_data,
         )
         response_serializer = self.get_serializer(
             instance=new_attachment,

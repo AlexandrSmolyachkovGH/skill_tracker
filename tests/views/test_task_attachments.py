@@ -100,7 +100,6 @@ def test_create_attachment(
     )
     data = {
         "task": str(mock_task.id),
-        "file_url": "test.url",
     }
     request = factory.post(
         uri,
@@ -118,7 +117,6 @@ def test_create_attachment(
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.data["task"] == mock_task.id
-    assert response.data["file_url"] == data["file_url"]
 
 
 @pytest.mark.django_db
