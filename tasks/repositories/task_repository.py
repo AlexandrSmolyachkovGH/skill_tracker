@@ -1,12 +1,32 @@
-from uuid import UUID
+import json
+from typing import cast
+from uuid import (
+    UUID,
+    uuid4,
+)
 
+from confluent_kafka import Producer
 from django.db.models.query import QuerySet
 from django.utils import timezone
 from rest_framework.exceptions import (
     NotFound,
 )
 
-from tasks.models import Task
+from kafka.event_schemes.schemes import (
+    AnalyticsEvent,
+)
+from kafka.event_schemes.schemes import AnalyticsEventType as EventType
+from kafka_initializer.apps import get_kafka_prod
+from project.settings import (
+    PROJECT_ANALYTICS_TOPIC,
+)
+from tasks.models import (
+    Task,
+    TaskStatus,
+)
+from utils.connections.conn_redis import redis_db
+
+producer = cast(Producer, get_kafka_prod())
 
 
 class TaskRepository:
@@ -59,6 +79,19 @@ class TaskRepository:
         create_data: dict,
     ) -> Task:
         new_task = Task.objects.create(**create_data)
+
+        event = AnalyticsEvent(
+            event_type=EventType.TASK_CREATED,
+            user_id=str(new_task.assigned_to_id),
+            project_id=str(new_task.project_id),
+            task_id=str(new_task.id),
+        )
+
+        producer.send(
+            topic=PROJECT_ANALYTICS_TOPIC,
+            value=event.model_dump(),
+        )
+
         return new_task
 
     def partial_update_task(
@@ -72,11 +105,55 @@ class TaskRepository:
             project_id=project_id,
         )
         self.check_and_return_task_if_not_deleted(task=task)
+        old_status = task.status
+
         for key, value in update_data.items():
             setattr(task, key, value)
         task.save(
             update_fields=list(update_data.keys()),
         )
+        upd_status = update_data.get("status", None)
+
+        if upd_status and old_status != upd_status:
+            redis_db.set(
+                name="update_status:" + str(uuid4()),
+                value=json.dumps(
+                    {
+                        "task_id": str(task.id),
+                        "project_id": str(task.project_id),
+                        "status": upd_status,
+                    }
+                ),
+                ex=600,
+            )
+
+            events = []
+
+            event = AnalyticsEvent(
+                event_type=EventType.TASK_STATUS_CHANGED,
+                user_id=str(task.assigned_to_id),
+                project_id=str(task.project_id),
+                task_id=str(task.id),
+            )
+
+            events.append(event)
+
+            if upd_status == TaskStatus.COMPLETED:
+                event_complete = AnalyticsEvent(
+                    event_type=EventType.TASK_COMPLETED,
+                    user_id=str(task.assigned_to_id),
+                    project_id=str(task.project_id),
+                    task_id=str(task.id),
+                )
+
+                events.append(event_complete)
+
+            for event in events:
+                producer.send(
+                    topic=PROJECT_ANALYTICS_TOPIC,
+                    value=event.model_dump(),
+                )
+
         return task
 
     def delete_task(

@@ -1,17 +1,40 @@
+from typing import cast
 from uuid import UUID
 
+from confluent_kafka import Producer
 from django.utils import timezone
 from rest_framework.exceptions import (
     NotFound,
     ValidationError,
 )
 
+from kafka.event_schemes.schemes import (
+    AnalyticsEvent,
+    AnalyticsEventType,
+)
+from kafka_initializer.apps import get_kafka_prod
+from project.settings import (
+    PROJECT_ANALYTICS_TOPIC,
+)
 from projects.models import Project
+
+producer = cast(Producer, get_kafka_prod())
 
 
 class ProjectRepository:
     def create_project(self, data: dict) -> Project:
         created_project = Project.objects.create(**data)
+
+        event = AnalyticsEvent(
+            event_type=AnalyticsEventType.PROJECT_CREATED,
+            user_id=str(created_project.owner_id),
+            project_id=str(created_project.id),
+        )
+
+        producer.send(
+            topic=PROJECT_ANALYTICS_TOPIC,
+            value=event.model_dump(),
+        )
         return created_project
 
     def delete_project(self, deleted_project: Project) -> Project:

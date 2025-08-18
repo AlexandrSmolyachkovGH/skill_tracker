@@ -68,10 +68,7 @@ class UserSkill(models.Model):
         unique_together = ("user", "skill")
 
     def __str__(self) -> str:
-        return (
-            f"user: {self.user}, skill: {self.skill},"
-            f"level: {self.level}, xp: {self.xp}"
-        )
+        return f"user: {self.user}, skill: {self.skill},level: {self.level}, xp: {self.xp}"
 
 
 class UserProject(models.Model):

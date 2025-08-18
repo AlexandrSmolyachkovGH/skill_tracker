@@ -7,7 +7,6 @@ from skills.models import Skill
 
 
 class SkillRepo:
-
     def create_skill(
         self,
         skill_data: dict,

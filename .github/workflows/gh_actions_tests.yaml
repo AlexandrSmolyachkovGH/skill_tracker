@@ -11,6 +11,16 @@ jobs:
       POSTGRES_PASSWORD: default_password
       POSTGRES_HOST: localhost
       POSTGRES_PORT: '5438'
+      AUTH_URI: http://127.0.0.1:8001
+      AUTH_HOST: 127.0.0.1
+      AUTH_PORT: 8001
+      ENTRY_POINT: localhost:9092
+      FILE_TOPIC: file_topic
+      TASK_ANALYTICS_TOPIC: task_analytics
+      PROJECT_ANALYTICS_TOPIC: project_analytics
+      REDIS_PORT: 6383
+      REDIS_HOST: localhost
+      REDIS_PASSWORD: skills_core_redis_pass
 
     steps:
       - name: Checkout repository code

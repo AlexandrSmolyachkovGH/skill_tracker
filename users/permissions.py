@@ -19,7 +19,10 @@ class InternalSecretPermission(BasePermission):
     ) -> bool:
         if request.method in ["POST", "DELETE"] and getattr(
             view, "action", None
-        ) in ["create", "destroy"]:
+        ) in [
+            "create",
+            "destroy",
+        ]:
             secret = request.headers.get("Service-Secret")
             return secret == SERVICE_SECRET
         return True

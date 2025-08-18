@@ -32,8 +32,7 @@ def test_get_attachment_list(
     factory = APIRequestFactory()
 
     uri = (
-        f"/api/projects/{mock_project_orm.id}"
-        + f"/tasks/{mock_task.id}/attachments/",
+        f"/api/projects/{mock_project_orm.id}" + f"/tasks/{mock_task.id}/attachments/",
     )
     request = factory.get(uri)
     request.user = mock_user_orm["auth_admin"]
@@ -95,8 +94,7 @@ def test_create_attachment(
     factory = APIRequestFactory()
 
     uri = (
-        f"/api/projects/{mock_project_orm.id}"
-        + f"/tasks/{mock_task.id}/attachments/",
+        f"/api/projects/{mock_project_orm.id}" + f"/tasks/{mock_task.id}/attachments/",
     )
     data = {
         "task": str(mock_task.id),

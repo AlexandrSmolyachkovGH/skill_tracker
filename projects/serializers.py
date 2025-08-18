@@ -1,4 +1,3 @@
-from rest_framework.relations import SlugRelatedField
 from rest_framework.serializers import (
     CharField,
     ChoiceField,

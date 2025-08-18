@@ -144,9 +144,7 @@ def mock_attachment(
     mock_user_orm: dict,
     mock_task: Task,
 ) -> TaskAttachment:
-    new_attachment = TaskAttachment.objects.create(
-        task=mock_task, file_url="test.url"
-    )
+    new_attachment = TaskAttachment.objects.create(task=mock_task, file_url="test.url")
     return new_attachment
 
 
@@ -177,3 +175,22 @@ def skill_and_user_skill_mock(
         "skill": skill,
         "user_skill": user_skill,
     }
+
+
+@pytest.fixture(autouse=True)
+def disable_kafka_producer(monkeypatch):
+    mock_producer = MagicMock()
+    mock_producer.send = MagicMock(return_value=None)
+
+    monkeypatch.setattr(
+        'tasks.repositories.task_repository.producer',
+        mock_producer
+    )
+    monkeypatch.setattr(
+        'projects.repositories.project_repository.producer',
+        mock_producer
+    )
+    monkeypatch.setattr(
+        'users.repositories.user_project_repository.producer',
+        mock_producer
+    )

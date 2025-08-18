@@ -97,6 +97,5 @@ def test_user_skill_str_repr(f_user, f_skill):
         skill=f_skill,
     )
     assert str(usm) == (
-        f"user: {usm.user}, skill: {usm.skill},"
-        f"level: {usm.level}, xp: {usm.xp}"
+        f"user: {usm.user}, skill: {usm.skill},level: {usm.level}, xp: {usm.xp}"
     )

@@ -73,6 +73,12 @@ class UserViewSet(ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
 
     def get_queryset(self) -> QuerySet[User]:
+        if (
+            getattr(self, "swagger_fake_view", False)
+            or not self.request.user.is_authenticated
+        ):
+            return User.objects.none()
+
         user = self.request.user
         if user.role in ["USER"]:
             queryset = User.objects.filter(id=user.id)
