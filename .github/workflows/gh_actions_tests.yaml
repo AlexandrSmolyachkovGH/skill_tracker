@@ -5,22 +5,37 @@ jobs:
   run_tests:
     runs-on: ubuntu-latest
     env:
-      SECRET_KEY: fake-secret-key-for-ci
-      POSTGRES_DB: default_db
-      POSTGRES_USER: default_user
-      POSTGRES_PASSWORD: default_password
-      POSTGRES_HOST: localhost
-      POSTGRES_PORT: '5438'
-      AUTH_URI: http://127.0.0.1:8001
-      AUTH_HOST: 127.0.0.1
-      AUTH_PORT: 8001
-      ENTRY_POINT: localhost:9092
-      FILE_TOPIC: file_topic
-      TASK_ANALYTICS_TOPIC: task_analytics
-      PROJECT_ANALYTICS_TOPIC: project_analytics
-      REDIS_PORT: 6383
-      REDIS_HOST: localhost
-      REDIS_PASSWORD: skills_core_redis_pass
+        SECRET_KEY: fake-secret-key-for-ci
+        SERVICE_SECRET: fake-service-secret
+        DEBUG: "True"
+
+        POSTGRES_DB: default_db
+        POSTGRES_USER: default_user
+        POSTGRES_PASSWORD: default_password
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: '5438'
+
+        AUTH_URI: http://127.0.0.1:8001
+        AUTH_HOST: 127.0.0.1
+        AUTH_PORT: 8001
+
+        ENTRY_POINT: localhost:9092
+        FILE_TOPIC: file_topic
+        TASK_ANALYTICS_TOPIC: task_analytics
+        PROJECT_ANALYTICS_TOPIC: project_analytics
+
+        REDIS_PORT: 6383
+        REDIS_HOST: localhost
+        REDIS_PASSWORD: skills_core_redis_pass
+
+        SERVICES: s3
+        AWS_ENDPOINT: http://localhost:4566
+        AWS_DEFAULT_REGION: us-east-1
+        LOCALSTACK_HOST: localhost
+        AWS_ACCESS_KEY_ID: test
+        AWS_SECRET_ACCESS_KEY: test
+
+        CELERY_BROKER_URL: redis://:skills_core_redis_pass@localhost:6383/0
 
     steps:
       - name: Checkout repository code
