@@ -34,6 +34,7 @@ class TaskSerializer(ModelSerializer):
             "created_at",
             "updated_at",
             "deleted_at",
+            "deadline",
         ]
 
 
@@ -65,6 +66,7 @@ class TaskCreateSerializer(ModelSerializer):
             "created_at",
             "updated_at",
             "deleted_at",
+            "deadline",
         ]
         read_only_fields = [
             "id",
@@ -108,6 +110,7 @@ class TaskPartialUpdateSerializer(ModelSerializer):
             "created_at",
             "updated_at",
             "deleted_at",
+            "deadline",
         ]
         read_only_fields = [
             "id",

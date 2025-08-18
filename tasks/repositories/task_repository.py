@@ -1,4 +1,5 @@
 import json
+from datetime import timedelta
 from typing import cast
 from uuid import (
     UUID,
@@ -17,6 +18,8 @@ from kafka.event_schemes.schemes import (
 )
 from kafka.event_schemes.schemes import AnalyticsEventType as EventType
 from kafka_initializer.apps import get_kafka_prod
+from logger.logger_conf import logger
+from notifications.deadline_msg import send_deadline_msg
 from project.settings import (
     PROJECT_ANALYTICS_TOPIC,
 )
@@ -65,6 +68,22 @@ class TaskRepository:
         )
         return task
 
+    def get_owner_email(
+        self,
+        task_id: UUID,
+    ) -> str:
+        email = (
+            Task.objects.filter(
+                id=task_id,
+            )
+            .values_list(
+                'assigned_to__email',
+                flat=True,
+            )
+            .first()
+        )
+        return email
+
     def get_tasks(
         self,
         project_id: UUID,
@@ -79,6 +98,17 @@ class TaskRepository:
         create_data: dict,
     ) -> Task:
         new_task = Task.objects.create(**create_data)
+        email = self.get_owner_email(
+            task_id=new_task.id,
+        )
+
+        send_deadline_msg.apply_async(
+            kwargs={
+                "task_id": str(new_task.id),
+                "email": email,
+            },
+            eta=(timezone.now() + timedelta(minutes=1)),
+        )
 
         event = AnalyticsEvent(
             event_type=EventType.TASK_CREATED,
@@ -138,6 +168,9 @@ class TaskRepository:
 
             events.append(event)
 
+            logger.info(
+                f"upd_status: {upd_status}, completed_status: {TaskStatus.COMPLETED}"
+            )
             if upd_status == TaskStatus.COMPLETED:
                 event_complete = AnalyticsEvent(
                     event_type=EventType.TASK_COMPLETED,

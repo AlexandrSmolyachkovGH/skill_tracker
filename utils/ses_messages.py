@@ -15,5 +15,15 @@ class SesMessages:
         )
         return message
 
+    def get_deadline_topic(self) -> str:
+        return "Deadline Info"
+
+    def get_deadline_message(
+        self,
+        task_id: str,
+    ) -> str:
+        message = f"Deadline info of task: {task_id}."
+        return message
+
 
 ses_messages = SesMessages()

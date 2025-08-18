@@ -1,7 +1,12 @@
 import uuid
+from datetime import (
+    datetime,
+    timedelta,
+)
 
 from django.core.validators import MinLengthValidator
 from django.db import models
+from django.utils import timezone
 
 from common.models.base import (
     TimeStampedModel,
@@ -13,6 +18,10 @@ class TaskStatus(models.TextChoices):
     IN_PROGRESS = "in_progress", "В работе"
     COMPLETED = "completed", "Завершена"
     CANCELED = "canceled", "Отменена"
+
+
+def default_deadline() -> datetime:
+    return timezone.now() + timedelta(days=3)
 
 
 class Task(TimeStampedModel):
@@ -40,6 +49,9 @@ class Task(TimeStampedModel):
         "projects.Project",
         on_delete=models.SET_NULL,
         null=True,
+    )
+    deadline = models.DateTimeField(
+        default=default_deadline,
     )
 
     class Meta:
